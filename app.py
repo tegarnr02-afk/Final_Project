@@ -1,39 +1,42 @@
 import streamlit as st
 import pickle
 import re
-from nltk.corpus import stopwords
-import nltk
 
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
-
-
-# Load Model & TF-IDF
-model = pickle.load(open("model.pkl", "rb"))
+# ==========================
+# LOAD MODEL & TF-IDF
+# ==========================
+model = pickle.load(open("model_sentiment.pkl", "rb"))
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
+# ==========================
+# SIMPLE CLEAN TEXT (tanpa NLTK)
+# ==========================
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"[^a-zA-Z ]", "", text)
+    return text
 
-# Cleaning function
-def clean_text(t):
-    t = t.lower()
-    t = re.sub(r'[^a-zA-Z ]','', t)
-    t = " ".join([w for w in t.split() if w not in stop_words])
-    return t
+# ==========================
+# STREAMLIT UI
+# ==========================
+st.set_page_config(page_title="Amazon Sentiment Analysis", layout="centered")
 
-
-# UI
 st.title("Amazon Review Sentiment Analysis")
 st.write("Masukkan review produk Amazon untuk mengetahui sentimennya.")
 
-review = st.text_area("Masukkan Review:")
+review_input = st.text_area("Masukkan Review:")
 
 if st.button("Prediksi"):
-
-    if review.strip() == "":
-        st.error("Review tidak boleh kosong!")
+    if review_input.strip() == "":
+        st.warning("Masukkan teks review terlebih dahulu.")
     else:
-        cleaned = clean_text(review)
-        vector = tfidf.transform([cleaned])    # WAJIB!
+        cleaned = clean_text(review_input)
+        vector = tfidf.transform([cleaned])
         prediction = model.predict(vector)[0]
 
-        st.success(f"Hasil Sentiment: **{prediction.upper()}**")
+        if prediction == "positive":
+            st.success("Sentimen: **POSITIF** 👍")
+        elif prediction == "negative":
+            st.error("Sentimen: **NEGATIF** 👎")
+        else:
+            st.info("Sentimen: **NETRAL** 😐")
