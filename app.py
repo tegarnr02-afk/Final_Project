@@ -162,14 +162,27 @@ with colA:
 with colB:
     st.write("Contoh review:")
 
-    if st.button("Contoh Positive"):
-        st.session_state["text_input"] = "Great product, works exactly as advertised. Very satisfied!"
+   # --- Sample review buttons ---
+sample_review = None
 
-    if st.button("Contoh Neutral"):
-        st.session_state["text_input"] = "Product is okay, does the job but nothing special."
+if st.button("Contoh Positive"):
+    sample_review = "Great product, works exactly as advertised. Very satisfied!"
 
-    if st.button("Contoh Negative"):
-        st.session_state["text_input"] = "Arrived broken and doesn't work. Terrible quality."
+if st.button("Contoh Neutral"):
+    sample_review = "Product is okay, does the job but nothing special."
+
+if st.button("Contoh Negative"):
+    sample_review = "Arrived broken and doesn't work. Terrible quality."
+
+
+# --- Text Input ---
+text_input = st.text_area(
+    "Masukkan review di sini...",
+    value=sample_review if sample_review else "",
+    height=140,
+    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
+)
+
 
 
 # Button to predict single review
