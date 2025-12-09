@@ -173,31 +173,36 @@ with colB:
 
     st.button("Reset", on_click=reset_input)
 
-import random
-
+    # tombol contoh random
     sample_examples = {
         "positive": [
-            "Amazing quality, exceeded my expectations!",
-            "Great product, fast delivery, very satisfied!",
-            "Works perfectly, highly recommended!"
+            "Amazing product! Exceeded my expectations.",
+            "Works perfectly, very satisfied!",
+            "High quality and fast delivery."
         ],
         "neutral": [
             "The product is okay, nothing special.",
-            "Average item, does the job as expected.",
-            "Not bad, but not great either."
+            "Average experience, not bad not great.",
+            "It's fine for the price."
         ],
         "negative": [
-            "Terrible quality, very disappointed.",
-            "Stopped working after a few days. Not recommended.",
-            "Bad product, arrived damaged."
+            "Terrible quality. Very disappointed.",
+            "Stopped working after two days.",
+            "Not worth the money at all."
         ]
     }
 
-    def random_sample():
-        sentiment = random.choice(list(sample_examples.keys()))
-        st.session_state["review_box"] = random.choice(sample_examples[sentiment])
+    import random
 
-    st.button("Contoh Acak", on_click=random_sample)
+    def random_example():
+        all_reviews = (
+            sample_examples["positive"]
+            + sample_examples["neutral"]
+            + sample_examples["negative"]
+        )
+        st.session_state["review_box"] = random.choice(all_reviews)
+
+    st.button("Contoh Acak", on_click=random_example)
 
 # Button to predict single review
 if st.button("Prediksi Sentimen"):
