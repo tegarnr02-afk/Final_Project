@@ -148,35 +148,30 @@ if model is None or tfidf is None:
     st.warning("Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
     st.info("Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl menggunakan pickle.dump.")
 
-# --- Main UI: single review input + sample buttons ---
+# --- Main UI: single review input + reset button ---
 st.markdown("### Masukkan review produk:")
+
+if "review_box" not in st.session_state:
+    st.session_state["review_box"] = ""
+
 colA, colB = st.columns([4,1])
+
 with colA:
     text_input = st.text_area(
-    "Masukkan review di sini...",
-    height=140,
-    value=st.session_state.get("sample_review", ""),
-    key="review_box",
-    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
-)
+        "Masukkan review di sini...",
+        height=140,
+        key="review_box",
+        placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
+    )
 
 with colB:
     st.write("Aksi:")
 
-   # text-area
-text_input = st.text_area(
-    "Masukkan review di sini...",
-    height=140,
-    key="review_box",
-    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
-)
+    # tombol reset
+    def reset_input():
+        st.session_state["review_box"] = ""
 
-# tombol reset
-def reset_input():
-    st.session_state["review_box"] = ""
-
-st.button("Reset", on_click=reset_input)
-
+    st.button("Reset", on_click=reset_input)
 
 # Button to predict single review
 if st.button("Prediksi Sentimen"):
