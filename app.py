@@ -149,24 +149,35 @@ if model is None or tfidf is None:
     st.info("Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl menggunakan pickle.dump.")
 
 # --- Main UI: single review input + sample buttons ---
-colA, colB = st.columns([4,1])
+# --- Main UI: single review input + sample buttons ---
+st.markdown("### Masukkan review produk:")
 
-with colB:
-    st.write("Contoh Review:")
-    if st.button("Positive"):
-        st.session_state.review_text = "Great product, very satisfied!"
-    if st.button("Neutral"):
-        st.session_state.review_text = "Product is okay, nothing special."
-    if st.button("Negative"):
-        st.session_state.review_text = "Arrived broken, very bad quality!"
+# state untuk sample review
+if "sample_review" not in st.session_state:
+    st.session_state["sample_review"] = ""
+
+colA, colB = st.columns([4,1])
 
 with colA:
     text_input = st.text_area(
-        "Masukkan review di sini:",
-        value=st.session_state.review_text,
+        "Masukkan review di sini...",
         height=140,
-        key="text_area_main"
+        value=st.session_state["sample_review"],
+        key="review_box",
+        placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
     )
+
+with colB:
+    st.write("Contoh review:")
+    if st.button("Contoh Positive"):
+        st.session_state["sample_review"] = "Great product, works exactly as advertised. Very satisfied!"
+    if st.button("Contoh Neutral"):
+        st.session_state["sample_review"] = "Product is okay, does the job but nothing special."
+    if st.button("Contoh Negative"):
+        st.session_state["sample_review"] = "Arrived broken and doesn't work. Terrible quality."
+
+# Refresh review box value setelah klik tombol
+text_input = st.session_state["sample_review"] if st.session_state["sample_review"] else text_input
 
 # ---------------------- PREDICT BUTTON ----------------------
 if st.button("Prediksi Sentimen"):
