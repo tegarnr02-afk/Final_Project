@@ -1,138 +1,270 @@
+# app.py
 import streamlit as st
+import pandas as pd
+import numpy as np
 import pickle
 import re
-import pandas as pd
+import io
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.utils.extmath import softmax as sk_softmax
 
-# =========================
-# LOAD MODEL & TFIDF
-# =========================
-model = pickle.load(open("model.pkl", "rb"))
-tfidf = pickle.load(open("tfidf.pkl", "rb"))
+st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
-# =========================
-# TEXT CLEANING FUNCTION
-# =========================
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"[^a-zA-Z ]", "", text)
-    return text
-
-
-# =========================
-# SINGLE TEXT PREDICTION
-# =========================
-def predict_sentiment(text):
-    cleaned = clean_text(text)
-    vector = tfidf.transform([cleaned])
-    pred = model.predict(vector)[0]
-
-    # probability / confidence
-    if hasattr(model, "predict_proba"):
-        probs = model.predict_proba(vector)[0]
-        return pred, {
-            "Negative": round(float(probs[0]), 3),
-            "Neutral": round(float(probs[1]), 3),
-            "Positive": round(float(probs[2]), 3),
-        }
-    else:
-        # fallback jika model tidak punya predict_proba
-        return pred, {"Negative": "-", "Neutral": "-", "Positive": "-"}
-
-
-# =========================
-# STREAMLIT PAGE SETTING
-# =========================
-st.set_page_config(
-    page_title="Amazon Sentiment Analysis",
-    page_icon="🛒",
-    layout="wide"
+# --- Style ---
+st.markdown(
+    """
+    <style>
+    .stApp { background-color: #0f1720; color: #e6eef8; }
+    .big-title { font-size:36px; font-weight:700; color: #ffffff; }
+    .sub { color: #b9c4d9; }
+    .card { padding:12px; border-radius:10px; background:#11131a; }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-st.title("🛒 Amazon Review Sentiment Analysis")
-st.write("Analisis sentimen dari ulasan produk menggunakan Machine Learning.")
+# --- Helper: stopwords fallback ---
+try:
+    import nltk
+    from nltk.corpus import stopwords
+    nltk.data.find("corpora/stopwords")
+    STOPWORDS = set(stopwords.words("english"))
+except Exception:
+    # fallback if nltk data not available (use sklearn's stopwords)
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+    STOPWORDS = set([w for w in ENGLISH_STOP_WORDS])
 
-# =========================
-# EXAMPLE REVIEWS
-# =========================
-example_reviews = {
-    "Positive": "This product is amazing! Great quality and totally worth the price.",
-    "Neutral": "The product is okay, nothing special. It works but not too impressive.",
-    "Negative": "Very disappointed. The product broke after one use, terrible quality."
-}
+# --- Text cleaning function (consistent with Colab) ---
+def clean_text(t: str) -> str:
+    if not isinstance(t, str):
+        return ""
+    t = t.lower()
+    t = re.sub(r"[^a-zA-Z\s]", " ", t)
+    tokens = [w for w in t.split() if (w not in STOPWORDS) and (len(w) > 1)]
+    return " ".join(tokens)
 
-st.subheader("Masukkan review produk:")
+# --- Utility: predict_proba wrapper (works even if model has no predict_proba) ---
+def get_proba_and_pred(model, X_vector):
+    classes = None
+    if hasattr(model, "classes_"):
+        classes = list(model.classes_)
+    else:
+        # fallback generic classes (must correspond to training)
+        classes = ["negative", "neutral", "positive"]
 
-col1, col2 = st.columns([3,1])
+    # try predict_proba
+    try:
+        probs = model.predict_proba(X_vector)
+    except Exception:
+        # try decision_function -> softmax
+        try:
+            scores = model.decision_function(X_vector)
+            # ensure 2D
+            if scores.ndim == 1:
+                # binary: convert to two-class probabilities
+                scores = np.vstack([-scores, scores]).T
+            probs = sk_softmax(scores, copy=True)
+        except Exception:
+            # as last resort, use one-hot from predict()
+            preds = model.predict(X_vector)
+            probs = np.zeros((len(preds), len(classes)))
+            for i, p in enumerate(preds):
+                if p in classes:
+                    probs[i, classes.index(p)] = 1.0
+            # if class labels mismatch length, pad/truncate
+            if probs.shape[1] != len(classes):
+                probs = np.zeros((len(preds), len(classes)))
+                # fill equal low prob
+                probs[:] = 1.0 / len(classes)
+    # ensure prob array shape matches classes length
+    if probs.shape[1] != len(classes):
+        # try to adapt shape by padding/trunc
+        new = np.zeros((probs.shape[0], len(classes)))
+        m = min(new.shape[1], probs.shape[1])
+        new[:, :m] = probs[:, :m]
+        if new.sum(axis=1).min() == 0:
+            new = new + 1e-6
+        new = new / new.sum(axis=1, keepdims=True)
+        probs = new
+    preds = [classes[i] for i in probs.argmax(axis=1)]
+    return probs, preds, classes
+
+# --- Load model & tfidf (try local files first) ---
+@st.cache_resource
+def load_pickle(path_bytes):
+    return pickle.loads(path_bytes.read())
+
+model = None
+tfidf = None
+
+col1, col2 = st.columns([2,1])
 with col1:
-    text_input = st.text_area("", height=160)
+    st.markdown('<div class="big-title">Amazon Review Sentiment Analysis</div>', unsafe_allow_html=True)
+    st.markdown("<div class='sub'>Masukkan review atau upload CSV berisi kolom review untuk mendapatkan prediksi sentimen.</div>", unsafe_allow_html=True)
 
 with col2:
-    if st.button("🔄 Gunakan contoh review"):
-        st.session_state['example'] = example_reviews
-        st.write("### Contoh Review:")
-        st.write("🟢 **Positive:**", example_reviews["Positive"])
-        st.write("⚪ **Neutral:**", example_reviews["Neutral"])
-        st.write("🔴 **Negative:**", example_reviews["Negative"])
+    st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=90)
 
-# =========================
-# PREDICTION BUTTON
-# =========================
-if st.button("🔍 Prediksi Sentimen"):
-    if text_input.strip() == "":
-        st.warning("Masukkan review terlebih dahulu.")
-    else:
-        sentiment, confidence = predict_sentiment(text_input)
-        st.success(f"**Hasil Sentimen: {sentiment}**")
-
-        st.subheader("📊 Confidence Level")
-        st.json(confidence)
-
-
-# =========================
-# CSV UPLOAD SECTION
-# =========================
 st.markdown("---")
-st.subheader("📁 Upload CSV untuk Prediksi Banyak Review")
 
-uploaded_file = st.file_uploader("Upload file CSV (kolom wajib: text)", type=["csv"])
+# Sidebar: load/upload models
+with st.sidebar.expander("Model / Vectorizer"):
+    st.write("Model & TF-IDF harus tersedia. Pilih salah satu:")
+    uploaded_model = st.file_uploader("Upload model.pkl (pickle)", type=["pkl","pickle"], key="m1")
+    uploaded_tfidf = st.file_uploader("Upload tfidf.pkl (pickle)", type=["pkl","pickle"], key="v1")
+    use_local = st.checkbox("Gunakan model.pkl & tfidf.pkl dari folder aplikasi (jika ada)", value=True)
 
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+# try loading local files if asked
+if use_local:
+    try:
+        with open("model.pkl","rb") as f:
+            model = pickle.load(f)
+    except Exception:
+        model = None
+    try:
+        with open("tfidf.pkl","rb") as f:
+            tfidf = pickle.load(f)
+    except Exception:
+        tfidf = None
 
-    if "text" not in df.columns:
-        st.error("CSV harus memiliki kolom bernama **text**.")
+# override with uploads if provided
+if uploaded_model is not None:
+    try:
+        model = load_pickle(uploaded_model)
+        st.sidebar.success("Model ter-upload")
+    except Exception as e:
+        st.sidebar.error(f"Gagal load model: {e}")
+
+if uploaded_tfidf is not None:
+    try:
+        tfidf = load_pickle(uploaded_tfidf)
+        st.sidebar.success("TF-IDF ter-upload")
+    except Exception as e:
+        st.sidebar.error(f"Gagal load tfidf: {e}")
+
+if model is None or tfidf is None:
+    st.warning("Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
+    st.info("Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl menggunakan pickle.dump.")
+
+# --- Main UI: single review input + sample buttons ---
+st.markdown("### Masukkan review produk:")
+colA, colB = st.columns([4,1])
+with colA:
+    text_input = st.text_area("Masukkan review di sini...", height=140, placeholder="Contoh: The product stopped working after 2 days. Very disappointed.")
+with colB:
+    st.write("Contoh review:")
+    if st.button("Contoh Positive"):
+        text_input = "Great product, works exactly as advertised. Very satisfied!"
+    if st.button("Contoh Neutral"):
+        text_input = "Product is okay, does the job but nothing special."
+    if st.button("Contoh Negative"):
+        text_input = "Arrived broken and doesn't work. Terrible quality."
+
+# Button to predict single review
+if st.button("Prediksi Sentimen"):
+    if model is None or tfidf is None:
+        st.error("Model atau TF-IDF belum tersedia. Upload atau tempatkan file model.pkl dan tfidf.pkl.")
     else:
-        st.write("### 5 Data Teratas")
-        st.dataframe(df.head())
+        if not isinstance(text_input, str) or text_input.strip() == "":
+            st.error("Masukkan teks review terlebih dahulu.")
+        else:
+            cleaned = clean_text(text_input)
+            try:
+                vec = tfidf.transform([cleaned])
+            except Exception as e:
+                st.error(f"Terjadi error saat melakukan transform: {e}")
+                st.stop()
 
-        # Prediksi
-        df["clean_text"] = df["text"].apply(clean_text)
-        vectors = tfidf.transform(df["clean_text"])
-        df["predicted_sentiment"] = model.predict(vectors)
+            try:
+                probs, preds, classes = get_proba_and_pred(model, vec)
+                pred = preds[0]
+                proba_map = {classes[i]: float(probs[0,i]) for i in range(len(classes))}
+                st.markdown(f"**Prediksi Sentimen:** `{pred}`")
+                st.markdown("**Confidence:**")
+                dfc = pd.DataFrame.from_dict(proba_map, orient="index", columns=["probability"]).sort_values("probability", ascending=False)
+                st.table((dfc*100).round(2))
+                # simple bar chart
+                st.bar_chart(dfc["probability"])
+            except Exception as e:
+                st.error(f"Gagal memprediksi: {e}")
 
-        st.write("### Hasil Prediksi")
-        st.dataframe(df[["text", "predicted_sentiment"]])
-
-        # Download hasil
-        csv_output = df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="⬇ Download Hasil Prediksi CSV",
-            data=csv_output,
-            file_name="hasil_prediksi.csv",
-            mime="text/csv"
-        )
-
-# =========================
-# FOOTER / ABOUT
-# =========================
 st.markdown("---")
-with st.expander("ℹ Tentang Aplikasi"):
-    st.write("""
-        Aplikasi ini menggunakan:
-        - **TF-IDF Vectorizer** untuk mengubah teks menjadi angka  
-        - **Logistic Regression / SVM / RandomForest** (model terbaik dari eksperimen)
-        - Dapat memprediksi satu review atau banyak review melalui file CSV  
-        
-        Dibuat untuk Final Project Data Science & Generative AI.
-    """)
 
+# --- Batch prediction via CSV upload ---
+st.markdown("## Prediksi Batch (Upload CSV)")
+st.write("Upload CSV berisi kolom teks review (contoh header: 'review_content', 'text', 'review').")
+
+uploaded_csv = st.file_uploader("Upload CSV untuk batch prediksi", type=["csv"])
+if uploaded_csv is not None:
+    try:
+        df_upload = pd.read_csv(uploaded_csv)
+        st.write("Preview data:")
+        st.dataframe(df_upload.head())
+        # choose column
+        col_options = list(df_upload.columns)
+        chosen_col = st.selectbox("Pilih kolom yang berisi review", col_options)
+        n_preview = st.number_input("Jumlah baris preview dan prediksi", min_value=1, max_value=500, value=10)
+        if st.button("Jalankan prediksi batch"):
+            if model is None or tfidf is None:
+                st.error("Model / TF-IDF belum tersedia.")
+            else:
+                texts = df_upload[chosen_col].fillna("").astype(str).tolist()
+                cleaned_texts = [clean_text(t) for t in texts]
+                try:
+                    X_vec = tfidf.transform(cleaned_texts)
+                except Exception as e:
+                    st.error(f"Error saat transform batch: {e}")
+                    st.stop()
+                probs, preds, classes = get_proba_and_pred(model, X_vec)
+                proba_df = pd.DataFrame(probs, columns=[f"prob_{c}" for c in classes])
+                out = df_upload.copy().reset_index(drop=True)
+                out["pred_sentiment"] = preds
+                out = pd.concat([out, proba_df], axis=1)
+                st.success("Selesai. Preview hasil:")
+                st.dataframe(out.head(n_preview))
+                # download
+                csv_bytes = out.to_csv(index=False).encode("utf-8")
+                st.download_button("Download hasil prediksi (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
+    except Exception as e:
+        st.error(f"Gagal membaca file CSV: {e}")
+
+st.markdown("---")
+
+# --- EDA (if sample dataset available) ---
+st.markdown("## Exploratory (Optional)")
+with st.expander("Upload sample CSV untuk EDA (sama file yg dipakai di training)"):
+    sample_file = st.file_uploader("Upload sample dataset untuk EDA", type=["csv"], key="eda")
+    if sample_file is not None:
+        try:
+            df_s = pd.read_csv(sample_file)
+            st.write("Preview:")
+            st.dataframe(df_s.head())
+            # try pick text column automatically
+            possible = [c for c in df_s.columns if any(k in c.lower() for k in ["review","text","comment"])]
+            if len(possible) == 0:
+                chosen = st.selectbox("Pilih kolom teks untuk EDA", df_s.columns)
+            else:
+                chosen = st.selectbox("Pilih kolom teks untuk EDA", possible)
+            st.write("Menghitung distribution sentiment (menggunakan model jika tersedia)...")
+            if model is not None and tfidf is not None:
+                texts = df_s[chosen].fillna("").astype(str).tolist()
+                cleaned_texts = [clean_text(t) for t in texts]
+                X_vec = tfidf.transform(cleaned_texts)
+                probs, preds, classes = get_proba_and_pred(model, X_vec)
+                df_s["pred_sentiment"] = preds
+                st.write("Distribusi prediksi:")
+                st.bar_chart(df_s["pred_sentiment"].value_counts())
+            # wordcloud of column
+            text_all = " ".join(df_s[chosen].fillna("").astype(str).tolist())
+            wc = WordCloud(width=800, height=400, background_color="white").generate(text_all)
+            fig, ax = plt.subplots(figsize=(10,4))
+            ax.imshow(wc, interpolation="bilinear")
+            ax.axis("off")
+            st.pyplot(fig)
+        except Exception as e:
+            st.error(f"Error EDA: {e}")
+
+st.markdown("---")
+st.write("About: Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
