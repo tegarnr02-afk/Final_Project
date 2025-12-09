@@ -1,84 +1,81 @@
 import streamlit as st
 import pickle
 import re
-import nltk
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud
 
-# Load stopwords
-from nltk.corpus import stopwords
-STOPWORDS = set(stopwords.words('english'))
-
-# Load Model & TF-IDF
-model = pickle.load(open("model.pkl", "rb"))
+# ================================
+# 1. Load Model & TFIDF
+# ================================
+model = pickle.load(open("model_sentiment.pkl", "rb"))
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
-# Cleaning text function
-def clean_text(t):
-    t = t.lower()
-    t = re.sub(r'[^a-zA-Z ]', '', t)
-    t = " ".join([w for w in t.split() if w not in STOPWORDS])
-    return t
+# ================================
+# 2. Stopword Manual (tanpa NLTK)
+# ================================
+STOPWORDS = {
+    "the","is","and","to","for","this","that","it","on","in","with","was","at","as",
+    "are","be","have","has","had","a","an","of","or","so","but","very","too","not"
+}
 
-# Streamlit Page Config
-st.set_page_config(
-    page_title="Amazon Sentiment Analyzer",
-    page_icon="🛒",
-    layout="centered",
+# ================================
+# 3. Clean Text
+# ================================
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-zA-Z ]', '', text)
+    words = [w for w in text.split() if w not in STOPWORDS]
+    return " ".join(words)
+
+# ================================
+# 4. Predict Function
+# ================================
+def predict_sentiment(text):
+    cleaned = clean_text(text)
+    vector = tfidf.transform([cleaned])
+    pred = model.predict(vector)[0]
+    return pred
+
+# ================================
+# 5. UI Design
+# ================================
+st.set_page_config(page_title="Amazon Review Sentiment", page_icon="⭐")
+
+st.markdown(
+    """
+    <h2 style="text-align:center; color:#4CAF50;">
+        ⭐ Amazon Product Review Sentiment Analyzer ⭐
+    </h2>
+    <p style="text-align:center; font-size:16px;">
+        Masukkan review produk — sistem akan memprediksi apakah sentiment <b>Positive</b>, <b>Neutral</b>, atau <b>Negative</b>.
+    </p>
+    """,
+    unsafe_allow_html=True
 )
 
-# ---------- HEADER ----------
-st.markdown("""
-    <h1 style="text-align:center; color:#4b7bec;">
-        🛒 Amazon Review Sentiment Analyzer
-    </h1>
-    <p style="text-align:center; font-size:18px;">
-        Masukkan review produk — aplikasi akan memprediksi apakah review tersebut 
-        <b style='color:green;'>Positive</b>, 
-        <b style='color:orange;'>Neutral</b>, atau 
-        <b style='color:red;'>Negative</b>.
-    </p>
-""", unsafe_allow_html=True)
+# ================================
+# 6. Input Box
+# ================================
+user_input = st.text_area("Ketikkan review produk:", height=150)
 
-st.write("---")
+btn = st.button("🔍 Prediksi Sentiment")
 
-# ---------- INPUT ----------
-review_input = st.text_area("✍️ Tulis review produk di sini:", height=150)
-
-if st.button("🔍 Prediksi Sentimen"):
-    if review_input.strip() == "":
-        st.warning("Masukkan teks review terlebih dahulu.")
+# ================================
+# 7. Prediction Output
+# ================================
+if btn:
+    if user_input.strip() == "":
+        st.warning("Tolong isi review terlebih dahulu.")
     else:
-        clean = clean_text(review_input)
-        vector = tfidf.transform([clean])
+        result = predict_sentiment(user_input)
 
-        pred = model.predict(vector)[0]
-        proba = model.predict_proba(vector).max()
-
-        # Warna label
-        if pred == "positive":
-            color = "#2ecc71"
-        elif pred == "negative":
-            color = "#e74c3c"
+        if result == "positive":
+            st.success("✅ **Sentiment: Positive** \n🎉 Produk dinilai baik!")
+        elif result == "neutral":
+            st.info("ℹ️ **Sentiment: Neutral**")
         else:
-            color = "#f1c40f"
+            st.error("❌ **Sentiment: Negative** \n⚠️ Mungkin produk tidak memuaskan.")
 
-        st.markdown(f"""
-            <div style="padding:18px; border-radius:10px; background-color:{color}; color:white;">
-                <h3 style="text-align:center;">🎯 Hasil Prediksi</h3>
-                <h2 style="text-align:center;">{pred.upper()}</h2>
-                <p style="text-align:center;">Confidence Score: <b>{proba:.2f}</b></p>
-            </div>
-        """, unsafe_allow_html=True)
-
-st.write("---")
-
-# ---------- FEATURES ----------
-st.subheader("📊 Wordcloud Contoh Kata Review")
-sample_text = "product good quality fast charging broke damage amazing bad waste money return"
-wc = WordCloud(width=700, height=350, background_color="white").generate(sample_text)
-
-plt.figure(figsize=(10,5))
-plt.imshow(wc)
-plt.axis("off")
-st.pyplot(plt)
+# ================================
+# 8. Bonus Fitur
+# ================================
+st.markdown("### 📊 Fitur Tambahan")
+st.caption("Anda bisa menambahkan fitur seperti upload CSV untuk analisis massal, atau rekomendasi produk berdasarkan sentiment.")
