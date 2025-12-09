@@ -10,7 +10,7 @@ from nltk.corpus import stopwords
 STOPWORDS = set(stopwords.words('english'))
 
 # Load Model & TF-IDF
-model = pickle.load(open("model_sentiment.pkl", "rb"))
+model = pickle.load(open("model.pkl", "rb"))
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
 # Cleaning text function
