@@ -163,11 +163,19 @@ with colA:
 with colB:
     st.write("Aksi:")
 
-    # tombol reset
-    if st.button("RESET"):
-        st.session_state["sample_review"] = ""
-        st.session_state["review_box"] = ""
-        st.experimental_rerun()
+   # text-area
+text_input = st.text_area(
+    "Masukkan review di sini...",
+    height=140,
+    key="review_box",
+    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
+)
+
+# tombol reset
+def reset_input():
+    st.session_state["review_box"] = ""
+
+st.button("Reset", on_click=reset_input)
 
 
 # Button to predict single review
