@@ -151,37 +151,41 @@ if model is None or tfidf is None:
 # --- Main UI: single review input + sample buttons ---
 st.markdown("### Masukkan review produk:")
 colA, colB = st.columns([4,1])
-with colA:
-    text_input = st.text_area(
-    "Masukkan review di sini...",
-    height=140,
-    key="text_input",
-    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
-)
 
 with colB:
-    st.write("Contoh review:")
+    st.write("Contoh Review:")
+    if st.button("Positive"):
+        st.session_state.review_text = "Great product, very satisfied!"
+    if st.button("Neutral"):
+        st.session_state.review_text = "Product is okay, nothing special."
+    if st.button("Negative"):
+        st.session_state.review_text = "Arrived broken, very bad quality!"
 
-   # --- Sample review buttons ---
-sample_review = None
+with colA:
+    text_input = st.text_area(
+        "Masukkan review di sini:",
+        value=st.session_state.review_text,
+        height=140,
+        key="text_area_main"
+    )
 
-if st.button("Contoh Positive"):
-    sample_review = "Great product, works exactly as advertised. Very satisfied!"
+# ---------------------- PREDICT BUTTON ----------------------
+if st.button("Prediksi Sentimen"):
+    if not model or not tfidf:
+        st.error("Model belum tersedia.")
+    else:
+        cleaned = clean_text(text_input)
+        vec = tfidf.transform([cleaned])
 
-if st.button("Contoh Neutral"):
-    sample_review = "Product is okay, does the job but nothing special."
+        probs, preds, classes = get_proba_and_pred(model, vec)
 
-if st.button("Contoh Negative"):
-    sample_review = "Arrived broken and doesn't work. Terrible quality."
+        st.subheader(f"Hasil Prediksi: `{preds[0]}`")
+        df_p = pd.DataFrame({"Sentiment": classes, "Probability": probs[0]})
+        st.table(df_p)
 
+        st.bar_chart(df_p.set_index("Sentiment"))
 
-# --- Text Input ---
-text_input = st.text_area(
-    "Masukkan review di sini...",
-    value=sample_review if sample_review else "",
-    height=140,
-    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
-)
+st.markdown("---")
 
 
 
