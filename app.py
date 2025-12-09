@@ -2,107 +2,126 @@ import streamlit as st
 import pickle
 import re
 
-# ================================
-# LOAD MODEL & VECTOR
-# ================================
+# ===============================
+# 1. Load Model & TF-IDF
+# ===============================
 model = pickle.load(open("model.pkl", "rb"))
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
-# ================================
-# CLEANING TEXT (Tanpa NLTK, aman)
-# ================================
+# ===============================
+# 2. Text Cleaning (tanpa nltk)
+# ===============================
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z ]', "", text)
+    text = re.sub(r"[^a-zA-Z ]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
     return text
 
-# ================================
-# CUSTOM STYLE CSS
-# ================================
-st.markdown("""
+# ===============================
+# 🎨 Custom CSS Aesthetic
+# ===============================
+st.markdown(
+    """
     <style>
-    body {
-        background-color: #F7F7F7;
+    .main {
+        background-color: #f5f7fa;
     }
     .title {
         font-size: 32px;
-        font-weight: bold;
-        color: #4F46E5;
+        font-weight: 700;
+        color: #3A3A3A;
         text-align: center;
-        margin-bottom: 10px;
+        margin-top: -20px;
     }
-    .subtext {
-        text-align: center;
+    .subtitle {
+        font-size: 18px;
         color: #555;
-        margin-bottom: 25px;
-    }
-    .card {
-        background-color: white;
-        padding: 18px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        border-left: 6px solid #4F46E5;
-    }
-    .example-box {
-        background-color: #EEF2FF;
-        padding: 10px;
-        border-radius: 10px;
+        text-align: center;
         margin-bottom: 20px;
     }
+    .result-box {
+        padding: 15px;
+        border-radius: 12px;
+        background-color: #ffffff;
+        border: 2px solid #ddd;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# ================================
-# TITLE
-# ================================
-st.markdown("<h1 class='title'>Amazon Product Review Sentiment App</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtext'>Masukkan review produk untuk mengetahui sentimennya.</p>", unsafe_allow_html=True)
+# ===============================
+# 🏷️ App Title
+# ===============================
+st.markdown("<div class='title'>📦 Amazon Review Sentiment Analyzer</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Analisis sentimen dari ulasan produk menggunakan Machine Learning</div>", unsafe_allow_html=True)
 
-# ================================
-# EXAMPLE REVIEWS
-# ================================
-with st.expander("📌 Contoh Review Otomatis (Klik untuk memilih)"):
-    
-    col1, col2, col3 = st.columns(3)
+# ===============================
+# 📝 Input User
+# ===============================
+text_input = st.text_area("Masukkan review produk:", height=150)
 
-    if col1.button("😊 Review Positive"):
-        st.session_state["example"] = "Amazing product! Works perfectly and worth the money."
+# Fitur Tambahan: contoh otomatis
+if st.button("🔄 Gunakan contoh review"):
+    text_input = "The product is broken and stopped working in 2 days"
 
-    if col2.button("😐 Review Neutral"):
-        st.session_state["example"] = "The product is okay, nothing special but works fine."
-
-    if col3.button("😡 Review Negative"):
-        st.session_state["example"] = "Terrible quality. Broke after one use. Not recommended."
-
-# Input area
-default_text = st.session_state.get("example", "")
-text_input = st.text_area("📝 Tulis Review Anda:", value=default_text, height=160)
-
-# ================================
-# BUTTON PREDICT
-# ================================
-if st.button("🔍 Prediksi Sentimen"):
-
+# ===============================
+# 🔍 Predict Button
+# ===============================
+if st.button("🔮 Prediksi Sentimen"):
     if text_input.strip() == "":
-        st.warning("⚠️ Silakan masukkan teks review terlebih dahulu.")
+        st.warning("Masukkan teks review terlebih dahulu.")
     else:
         cleaned = clean_text(text_input)
         vector = tfidf.transform([cleaned])
-        prediction = model.predict(vector)[0]
+        pred = model.predict(vector)[0]
 
-        # ================================
-        # OUTPUT CARD
-        # ================================
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        # warna output
+        color_map = {
+            "positive": "#4CAF50",
+            "neutral": "#FFC107",
+            "negative": "#F44336"
+        }
 
-        if prediction == "positive":
-            st.success("😊 **Sentimen: POSITIVE**")
-            st.write("Review menunjukkan bahwa pelanggan merasa puas.")
-        elif prediction == "neutral":
-            st.info("😐 **Sentimen: NEUTRAL**")
-            st.write("Review bernada biasa saja, tidak terlalu puas atau kecewa.")
-        else:
-            st.error("😡 **Sentimen: NEGATIVE**")
-            st.write("Review bernada kecewa terhadap produk.")
+        st.markdown(
+            f"<div class='result-box' style='color:{color_map[pred]};'>Hasil Sentimen: {pred.upper()}</div>",
+            unsafe_allow_html=True
+        )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+# ===============================
+# 📊 Additional Feature: 
+#    Menampilkan Confidence Model
+# ===============================
+if text_input.strip() != "":
+    cleaned = clean_text(text_input)
+    vector = tfidf.transform([cleaned])
+
+    try:
+        proba = model.predict_proba(vector)[0]
+        st.subheader("📈 Confidence Level")
+        st.write({
+            "Negative": round(proba[0], 3),
+            "Neutral": round(proba[1], 3),
+            "Positive": round(proba[2], 3)
+        })
+    except:
+        st.info("Model ini tidak mendukung probability (SVM). Confidence hanya muncul untuk Logistic Regression.")
+
+# ===============================
+# ℹ️ About Section
+# ===============================
+with st.expander("ℹ Tentang Aplikasi"):
+    st.write("""
+        Aplikasi ini menggunakan **Sentiment Analysis** berdasarkan dataset Amazon.
+        
+        Model terbaik dipilih dari **3 model machine learning**:
+        - Logistic Regression  
+        - SVM  
+        - Random Forest  
+
+        Aplikasi dibuat untuk Final Project CAMP Batch 3 — Data Science & GenAI.
+    """)
