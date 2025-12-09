@@ -152,15 +152,25 @@ if model is None or tfidf is None:
 st.markdown("### Masukkan review produk:")
 colA, colB = st.columns([4,1])
 with colA:
-    text_input = st.text_area("Masukkan review di sini...", height=140, placeholder="Contoh: The product stopped working after 2 days. Very disappointed.")
+    text_input = st.text_area(
+    "Masukkan review di sini...",
+    height=140,
+    key="text_input",
+    placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
+)
+
 with colB:
     st.write("Contoh review:")
+
     if st.button("Contoh Positive"):
-        text_input = "Great product, works exactly as advertised. Very satisfied!"
+        st.session_state["text_input"] = "Great product, works exactly as advertised. Very satisfied!"
+
     if st.button("Contoh Neutral"):
-        text_input = "Product is okay, does the job but nothing special."
+        st.session_state["text_input"] = "Product is okay, does the job but nothing special."
+
     if st.button("Contoh Negative"):
-        text_input = "Arrived broken and doesn't work. Terrible quality."
+        st.session_state["text_input"] = "Arrived broken and doesn't work. Terrible quality."
+
 
 # Button to predict single review
 if st.button("Prediksi Sentimen"):
