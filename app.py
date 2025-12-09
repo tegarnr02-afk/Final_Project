@@ -1,127 +1,138 @@
 import streamlit as st
 import pickle
 import re
+import pandas as pd
 
-# ===============================
-# 1. Load Model & TF-IDF
-# ===============================
+# =========================
+# LOAD MODEL & TFIDF
+# =========================
 model = pickle.load(open("model.pkl", "rb"))
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
-# ===============================
-# 2. Text Cleaning (tanpa nltk)
-# ===============================
+# =========================
+# TEXT CLEANING FUNCTION
+# =========================
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r"[^a-zA-Z ]", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"[^a-zA-Z ]", "", text)
     return text
 
-# ===============================
-# 🎨 Custom CSS Aesthetic
-# ===============================
-st.markdown(
-    """
-    <style>
-    .main {
-        background-color: #f5f7fa;
-    }
-    .title {
-        font-size: 32px;
-        font-weight: 700;
-        color: #3A3A3A;
-        text-align: center;
-        margin-top: -20px;
-    }
-    .subtitle {
-        font-size: 18px;
-        color: #555;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .result-box {
-        padding: 15px;
-        border-radius: 12px;
-        background-color: #ffffff;
-        border: 2px solid #ddd;
-        text-align: center;
-        font-size: 20px;
-        font-weight: 600;
-        margin-top: 10px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+
+# =========================
+# SINGLE TEXT PREDICTION
+# =========================
+def predict_sentiment(text):
+    cleaned = clean_text(text)
+    vector = tfidf.transform([cleaned])
+    pred = model.predict(vector)[0]
+
+    # probability / confidence
+    if hasattr(model, "predict_proba"):
+        probs = model.predict_proba(vector)[0]
+        return pred, {
+            "Negative": round(float(probs[0]), 3),
+            "Neutral": round(float(probs[1]), 3),
+            "Positive": round(float(probs[2]), 3),
+        }
+    else:
+        # fallback jika model tidak punya predict_proba
+        return pred, {"Negative": "-", "Neutral": "-", "Positive": "-"}
+
+
+# =========================
+# STREAMLIT PAGE SETTING
+# =========================
+st.set_page_config(
+    page_title="Amazon Sentiment Analysis",
+    page_icon="🛒",
+    layout="wide"
 )
 
-# ===============================
-# 🏷️ App Title
-# ===============================
-st.markdown("<div class='title'>📦 Amazon Review Sentiment Analyzer</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Analisis sentimen dari ulasan produk menggunakan Machine Learning</div>", unsafe_allow_html=True)
+st.title("🛒 Amazon Review Sentiment Analysis")
+st.write("Analisis sentimen dari ulasan produk menggunakan Machine Learning.")
 
-# ===============================
-# 📝 Input User
-# ===============================
-text_input = st.text_area("Masukkan review produk:", height=150)
+# =========================
+# EXAMPLE REVIEWS
+# =========================
+example_reviews = {
+    "Positive": "This product is amazing! Great quality and totally worth the price.",
+    "Neutral": "The product is okay, nothing special. It works but not too impressive.",
+    "Negative": "Very disappointed. The product broke after one use, terrible quality."
+}
 
-# Fitur Tambahan: contoh otomatis
-if st.button("🔄 Gunakan contoh review"):
-    text_input = "The product is broken and stopped working in 2 days"
+st.subheader("Masukkan review produk:")
 
-# ===============================
-# 🔍 Predict Button
-# ===============================
-if st.button("🔮 Prediksi Sentimen"):
+col1, col2 = st.columns([3,1])
+with col1:
+    text_input = st.text_area("", height=160)
+
+with col2:
+    if st.button("🔄 Gunakan contoh review"):
+        st.session_state['example'] = example_reviews
+        st.write("### Contoh Review:")
+        st.write("🟢 **Positive:**", example_reviews["Positive"])
+        st.write("⚪ **Neutral:**", example_reviews["Neutral"])
+        st.write("🔴 **Negative:**", example_reviews["Negative"])
+
+# =========================
+# PREDICTION BUTTON
+# =========================
+if st.button("🔍 Prediksi Sentimen"):
     if text_input.strip() == "":
-        st.warning("Masukkan teks review terlebih dahulu.")
+        st.warning("Masukkan review terlebih dahulu.")
     else:
-        cleaned = clean_text(text_input)
-        vector = tfidf.transform([cleaned])
-        pred = model.predict(vector)[0]
+        sentiment, confidence = predict_sentiment(text_input)
+        st.success(f"**Hasil Sentimen: {sentiment}**")
 
-        # warna output
-        color_map = {
-            "positive": "#4CAF50",
-            "neutral": "#FFC107",
-            "negative": "#F44336"
-        }
+        st.subheader("📊 Confidence Level")
+        st.json(confidence)
 
-        st.markdown(
-            f"<div class='result-box' style='color:{color_map[pred]};'>Hasil Sentimen: {pred.upper()}</div>",
-            unsafe_allow_html=True
+
+# =========================
+# CSV UPLOAD SECTION
+# =========================
+st.markdown("---")
+st.subheader("📁 Upload CSV untuk Prediksi Banyak Review")
+
+uploaded_file = st.file_uploader("Upload file CSV (kolom wajib: text)", type=["csv"])
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+
+    if "text" not in df.columns:
+        st.error("CSV harus memiliki kolom bernama **text**.")
+    else:
+        st.write("### 5 Data Teratas")
+        st.dataframe(df.head())
+
+        # Prediksi
+        df["clean_text"] = df["text"].apply(clean_text)
+        vectors = tfidf.transform(df["clean_text"])
+        df["predicted_sentiment"] = model.predict(vectors)
+
+        st.write("### Hasil Prediksi")
+        st.dataframe(df[["text", "predicted_sentiment"]])
+
+        # Download hasil
+        csv_output = df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇ Download Hasil Prediksi CSV",
+            data=csv_output,
+            file_name="hasil_prediksi.csv",
+            mime="text/csv"
         )
 
-# ===============================
-# 📊 Additional Feature: 
-#    Menampilkan Confidence Model
-# ===============================
-if text_input.strip() != "":
-    cleaned = clean_text(text_input)
-    vector = tfidf.transform([cleaned])
-
-    try:
-        proba = model.predict_proba(vector)[0]
-        st.subheader("📈 Confidence Level")
-        st.write({
-            "Negative": round(proba[0], 3),
-            "Neutral": round(proba[1], 3),
-            "Positive": round(proba[2], 3)
-        })
-    except:
-        st.info("Model ini tidak mendukung probability (SVM). Confidence hanya muncul untuk Logistic Regression.")
-
-# ===============================
-# ℹ️ About Section
-# ===============================
+# =========================
+# FOOTER / ABOUT
+# =========================
+st.markdown("---")
 with st.expander("ℹ Tentang Aplikasi"):
     st.write("""
-        Aplikasi ini menggunakan **Sentiment Analysis** berdasarkan dataset Amazon.
+        Aplikasi ini menggunakan:
+        - **TF-IDF Vectorizer** untuk mengubah teks menjadi angka  
+        - **Logistic Regression / SVM / RandomForest** (model terbaik dari eksperimen)
+        - Dapat memprediksi satu review atau banyak review melalui file CSV  
         
-        Model terbaik dipilih dari **3 model machine learning**:
-        - Logistic Regression  
-        - SVM  
-        - Random Forest  
-
-        Aplikasi dibuat untuk Final Project CAMP Batch 3 — Data Science & GenAI.
+        Dibuat untuk Final Project Data Science & Generative AI.
     """)
+
