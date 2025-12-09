@@ -60,10 +60,48 @@ st.markdown(
 st.markdown("<div class='title'>📦 Amazon Review Sentiment Analyzer</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>Analisis sentimen dari ulasan produk menggunakan Machine Learning</div>", unsafe_allow_html=True)
 
+st.subheader("Contoh Review Otomatis")
+
+example_sentiment = st.selectbox(
+    "Pilih contoh review:",
+    ["Pilih contoh", "Positive", "Neutral", "Negative"]
+)
+
+example_reviews = {
+    "Positive": [
+        "This product is amazing! The quality is great and works perfectly.",
+        "Very satisfied, fast charging and durable cable!",
+        "Excellent product, definitely worth the price."
+    ],
+    "Neutral": [
+        "The product is okay, nothing special but it works fine.",
+        "Average quality, does the job but could be better.",
+        "It works as expected. Not great, not bad."
+    ],
+    "Negative": [
+        "Very disappointed, the product broke after one day.",
+        "Poor quality, stopped working quickly. Waste of money.",
+        "Terrible experience, the item did not match the description."
+    ]
+}
+
+auto_text = ""
+
+if example_sentiment != "Pilih contoh":
+    auto_text = st.selectbox(
+        "Pilih kalimat contoh:",
+        example_reviews[example_sentiment]
+    )
+
 # ===============================
 # 📝 Input User
 # ===============================
-text_input = st.text_area("Masukkan review produk:", height=150)
+review = st.text_area(
+    "Tulis review produk di sini:",
+    auto_text,
+    height=150
+)
+
 
 # Fitur Tambahan: contoh otomatis
 if st.button("🔄 Gunakan contoh review"):
