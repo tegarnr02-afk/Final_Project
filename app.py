@@ -173,6 +173,32 @@ with colB:
 
     st.button("Reset", on_click=reset_input)
 
+import random
+
+    sample_examples = {
+        "positive": [
+            "Amazing quality, exceeded my expectations!",
+            "Great product, fast delivery, very satisfied!",
+            "Works perfectly, highly recommended!"
+        ],
+        "neutral": [
+            "The product is okay, nothing special.",
+            "Average item, does the job as expected.",
+            "Not bad, but not great either."
+        ],
+        "negative": [
+            "Terrible quality, very disappointed.",
+            "Stopped working after a few days. Not recommended.",
+            "Bad product, arrived damaged."
+        ]
+    }
+
+    def random_sample():
+        sentiment = random.choice(list(sample_examples.keys()))
+        st.session_state["review_box"] = random.choice(sample_examples[sentiment])
+
+    st.button("Contoh Acak", on_click=random_sample)
+
 # Button to predict single review
 if st.button("Prediksi Sentimen"):
     if model is None or tfidf is None:
