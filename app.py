@@ -149,55 +149,18 @@ if model is None or tfidf is None:
     st.info("Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl menggunakan pickle.dump.")
 
 # --- Main UI: single review input + sample buttons ---
-# --- Main UI: single review input + sample buttons ---
 st.markdown("### Masukkan review produk:")
-
-# state untuk sample review
-if "sample_review" not in st.session_state:
-    st.session_state["sample_review"] = ""
-
 colA, colB = st.columns([4,1])
-
 with colA:
-    text_input = st.text_area(
-        "Masukkan review di sini...",
-        height=140,
-        value=st.session_state["sample_review"],
-        key="review_box",
-        placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
-    )
-
+    text_input = st.text_area("Masukkan review di sini...", height=140, placeholder="Contoh: The product stopped working after 2 days. Very disappointed.")
 with colB:
     st.write("Contoh review:")
     if st.button("Contoh Positive"):
-        st.session_state["sample_review"] = "Great product, works exactly as advertised. Very satisfied!"
+        text_input = "Great product, works exactly as advertised. Very satisfied!"
     if st.button("Contoh Neutral"):
-        st.session_state["sample_review"] = "Product is okay, does the job but nothing special."
+        text_input = "Product is okay, does the job but nothing special."
     if st.button("Contoh Negative"):
-        st.session_state["sample_review"] = "Arrived broken and doesn't work. Terrible quality."
-
-# Refresh review box value setelah klik tombol
-text_input = st.session_state["sample_review"] if st.session_state["sample_review"] else text_input
-
-# ---------------------- PREDICT BUTTON ----------------------
-if st.button("Prediksi Sentimen"):
-    if not model or not tfidf:
-        st.error("Model belum tersedia.")
-    else:
-        cleaned = clean_text(text_input)
-        vec = tfidf.transform([cleaned])
-
-        probs, preds, classes = get_proba_and_pred(model, vec)
-
-        st.subheader(f"Hasil Prediksi: `{preds[0]}`")
-        df_p = pd.DataFrame({"Sentiment": classes, "Probability": probs[0]})
-        st.table(df_p)
-
-        st.bar_chart(df_p.set_index("Sentiment"))
-
-st.markdown("---")
-
-
+        text_input = "Arrived broken and doesn't work. Terrible quality."
 
 # Button to predict single review
 if st.button("Prediksi Sentimen"):
