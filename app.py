@@ -149,7 +149,6 @@ if model is None or tfidf is None:
     st.info("Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl menggunakan pickle.dump.")
 
 # --- Main UI: single review input + sample buttons ---
-st.markdown("### Masukkan review produk:")
 colA, colB = st.columns([4,1])
 
 with colB:
