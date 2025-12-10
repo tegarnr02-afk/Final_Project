@@ -19,9 +19,10 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 
-# ===========================
-# MODERN PREMIUM TOGGLE (DAY / NIGHT MODE)
-# ===========================
+# ======================
+# PREMIUM MODERN TOGGLE
+# ======================
+
 toggle_css = """
 <style>
 
@@ -29,12 +30,11 @@ toggle_css = """
     display:flex;
     justify-content:flex-end;
     margin-top:10px;
-    margin-bottom:15px;
     width:100%;
 }
 
 .toggle-switch {
-    width: 170px;
+    width: 180px;
     height: 60px;
     background: linear-gradient(45deg, #1e3799, #4a69bd);
     border-radius: 40px;
@@ -62,11 +62,12 @@ toggle_css = """
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:24px;
+    font-size:22px;
+    font-weight:900;
 }
 
 .toggle-ball.right {
-    left: 115px;
+    left: 125px;
 }
 
 .mode-text {
@@ -91,30 +92,31 @@ function setTheme(mode){
 
 st.markdown(toggle_css, unsafe_allow_html=True)
 
-# READ URL PARAM
+# Sync theme with URL
 if "theme" in st.query_params:
     st.session_state.theme = st.query_params["theme"]
     st.query_params.clear()
 
-# Build toggle
 current = st.session_state.theme
 
-ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
 toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
+ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
 icon = "☀" if current == "light" else "🌙"
 text = "DAY MODE" if current == "light" else "NIGHT MODE"
 next_mode = "dark" if current == "light" else "light"
 
-toggle_html = f"""
-<div class="toggle-wrapper">
-    <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
-        <div class="{ball_class}">{icon}</div>
-        <div class="mode-text">{text}</div>
+st.markdown(
+    f"""
+    <div class="toggle-wrapper">
+        <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
+            <div class="{ball_class}">{icon}</div>
+            <div class="mode-text">{text}</div>
+        </div>
     </div>
-</div>
-"""
+    """,
+    unsafe_allow_html=True
+)
 
-st.markdown(toggle_html, unsafe_allow_html=True)
 
 
 
@@ -154,8 +156,9 @@ st.markdown(
     """
     <style>
    
-    .big-title { font-size:36px; font-weight:700; color: #ffffff; }
-    .sub { color: #b9c4d9; }
+  .big-title { font-size:36px; font-weight:700; }
+.sub { opacity:0.7; }
+
     .card { padding:12px; border-radius:10px; background:#11131a; }
     </style>
     """,
@@ -243,6 +246,8 @@ with col1:
 
 with col2:
     st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=90)
+    st.markdown(toggle_html, unsafe_allow_html=True)
+
 
 st.markdown("---")
 
