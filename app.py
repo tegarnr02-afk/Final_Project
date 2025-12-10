@@ -13,61 +13,113 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 # --- FIX: theme harus diinisialisasi dulu ---
 if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark"
-
-def switch_theme():
-    if st.session_state.theme == "dark":
-        st.session_state.theme = "light"
-    else:
-        st.session_state.theme = "dark"
+    st.session_state.theme = "light"
 
 
+def toggle_theme():
+    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
 
-DARK_THEME = """
+# Custom CSS tombol toggle
+toggle_css = """
 <style>
-.stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
-
-textarea, input, .stTextArea textarea {
-    background-color:#11131a !important;
-    color:#e6eef8 !important;
+.toggle-wrapper {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
-.stButton>button {
-    background:#11131a !important;
-    color:white !important;
-    border:1px solid #444 !important;
+.toggle-btn {
+    width: 160px;
+    height: 55px;
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 0px 15px;
+    font-weight: 600;
+    font-size: 16px;
 }
 
-.big-title { color: white !important; }
-.sub { color: #b9c4d9 !important; }
+.day {
+    background: linear-gradient(45deg, #ff6b81, #feca57);
+    color: white;
+    border: 3px solid #ffa502;
+}
+
+.night {
+    background: linear-gradient(45deg, #1e3799, #4a69bd);
+    color: white;
+    border: 3px solid #0c2461;
+}
+
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
 </style>
 """
+
+st.markdown(toggle_css, unsafe_allow_html=True)
+
+# Buat tombol toggle
+day_clicked = st.button(" ", key="daybtn")
+night_clicked = st.button(" ", key="nightbtn")
+
+toggle_html = f"""
+<div class="toggle-wrapper">
+
+<div class="toggle-btn day" onclick="window.location.href='?theme=light'">
+    DAY MODE
+    <div class="icon-circle">☀️</div>
+</div>
+
+<div class="toggle-btn night" onclick="window.location.href='?theme=dark'">
+    NIGHT MODE
+    <div class="icon-circle">🌙</div>
+</div>
+
+</div>
+"""
+
+st.markdown(toggle_html, unsafe_allow_html=True)
+
+if "theme" in st.query_params:
+    st.session_state.theme = st.query_params["theme"]
+    st.query_params.clear()
+    st.rerun()
+
+
 
 LIGHT_THEME = """
 <style>
 .stApp { background-color: #ffffff !important; color: #000000 !important; }
-
 textarea, input, .stTextArea textarea {
-    background-color:#f5f5f5 !important;
-    color:#000000 !important;
+    background:#f3f3f3 !important; color:#000000 !important;
 }
-
-.stButton>button {
-    background:#e8e8e8 !important;
-    color:black !important;
-    border:1px solid #bbb !important;
-}
-
-.big-title { color: #000000 !important; }
-.sub { color: #333333 !important; }
 </style>
 """
 
+DARK_THEME = """
+<style>
+.stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
+textarea, input, .stTextArea textarea {
+    background:#11131a !important; color:#e6eef8 !important;
+}
+</style>
+"""
 
 if st.session_state.theme == "dark":
     st.markdown(DARK_THEME, unsafe_allow_html=True)
 else:
     st.markdown(LIGHT_THEME, unsafe_allow_html=True)
+
 
 
 # tombol pilih tema
