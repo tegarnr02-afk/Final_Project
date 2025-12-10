@@ -114,18 +114,6 @@ toggle_html = f"""
     </div>
 </div>
 """
-st.markdown(
-    f"""
-    <div class="toggle-wrapper">
-        <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
-            <div class="{ball_class}">{icon}</div>
-            <div class="mode-text">{text}</div>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 
 
 
