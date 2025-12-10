@@ -11,23 +11,42 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
-# --- Theme Toggle ---
-theme = st.sidebar.radio("Tema Aplikasi", ["Dark", "Light"], index=0)
+# -------- THEME SWITCHER (Dark / Light) --------
+if "theme" not in st.session_state:
+    st.session_state["theme"] = "dark"   # default dark
 
-# --- Apply Theme ---
-if theme == "Dark":
+def set_theme(theme):
+    st.session_state["theme"] = theme
+
+# tombol pilih tema
+colT1, colT2 = st.columns([1,1])
+with colT1:
+    st.button("🌙 Dark Mode", on_click=lambda: set_theme("dark"))
+with colT2:
+    st.button("☀️ Light Mode", on_click=lambda: set_theme("light"))
+
+# CSS untuk tema
+if st.session_state["theme"] == "dark":
     st.markdown("""
         <style>
-        .stApp { background-color: #0f1720; color: #e6eef8; }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <style>
-        .stApp { background-color: #ffffff; color: #000000; }
+        .stApp { background-color:#0f1720; color:#e6eef8; }
+        textarea, input, .stTextInput > div > div > input {
+            background-color:#11131a !important;
+            color:white !important;
+        }
         </style>
     """, unsafe_allow_html=True)
 
+else:  # LIGHT MODE
+    st.markdown("""
+        <style>
+        .stApp { background-color:white; color:black; }
+        textarea, input, .stTextInput > div > div > input {
+            background-color:#f5f5f5 !important;
+            color:black !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
 # --- Style ---
 st.markdown(
