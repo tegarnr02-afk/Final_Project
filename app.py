@@ -122,12 +122,6 @@ else:
 
 
 
-# tombol pilih tema
-colD1, colD2 = st.columns([1,1])
-with colD1:
-    st.button("🌙 Dark Mode", on_click=switch_theme)
-with colD2:
-    st.button("🌞 Light Mode", on_click=switch_theme)
 
 
 # CSS untuk tema
