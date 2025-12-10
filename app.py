@@ -11,122 +11,81 @@ from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
-# --- Init session theme ---
+# ============================
+# THEME TOGGLE (NEW CLEAN VERSION)
+# ============================
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# --- Theme Switch Handler ---
-def switch_theme():
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-
-
-
-
-def toggle_theme():
-    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+def toggle_theme(mode):
+    st.session_state.theme = mode
+    st.rerun()
 
 toggle_css = """
 <style>
-
-.theme-toggle {
-    width: 180px;
-    height: 60px;
-    border-radius: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0px 18px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 17px;
-    transition: all 0.4s ease-in-out;
-    user-select: none;
+.toggle-container{
+    display:flex;
+    gap:20px;
+    margin-top:10px;
+    margin-bottom:25px;
 }
 
-.theme-light {
-    background: linear-gradient(45deg, #ff6b81, #feca57);
-    color: white;
-    border: 3px solid #ff9f43;
+/* TRANSITION */
+.toggle-btn{
+    width:180px;
+    height:60px;
+    border-radius:40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0px 20px;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.25s ease-in-out;
 }
 
-.theme-dark {
-    background: linear-gradient(45deg, #1e3799, #4a69bd);
-    color: white;
-    border: 3px solid #0c2461;
+.day{
+    background:linear-gradient(45deg,#ff7675,#feca57);
+    color:white;
+    border:3px solid #ffa502;
 }
 
-.icon-circle {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
+.night{
+    background:linear-gradient(45deg,#1e3799,#4a69bd);
+    color:white;
+    border:3px solid #0c2461;
 }
 
+.icon-circle{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+}
 </style>
 """
 
-
 st.markdown(toggle_css, unsafe_allow_html=True)
 
-colT, _ = st.columns([1,5])
+# DISPLAY TOGGLE
+colT1, colT2 = st.columns([1,3])
+with colT1:
+    st.write(" ")  # spacer
+with colT2:
+    st.markdown("<div class='toggle-container'>", unsafe_allow_html=True)
 
-with colT:
-    if st.session_state.theme == "light":
-        if st.button(" ",
-            key="toggle_theme_button",
-            help="Switch theme"):
-            switch_theme()
+    if st.button("☀ DAY MODE", key="day_mode"):
+        toggle_theme("light")
 
-        st.markdown("""
-        <div class="theme-toggle theme-light">
-            DAY MODE <div class="icon-circle">☀</div>
-        </div>
-        """, unsafe_allow_html=True)
+    if st.button("🌙 NIGHT MODE", key="night_mode"):
+        toggle_theme("dark")
 
-    else:
-        if st.button(" ",
-            key="toggle_theme_button_dark",
-            help="Switch theme"):
-            switch_theme()
-
-        st.markdown("""
-        <div class="theme-toggle theme-dark">
-            NIGHT MODE <div class="icon-circle">🌙</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-# Buat tombol toggle
-day_clicked = st.button(" ", key="daybtn")
-night_clicked = st.button(" ", key="nightbtn")
-
-toggle_html = f"""
-<div class="toggle-wrapper">
-
-<div class="toggle-btn day" onclick="window.location.href='?theme=light'">
-    DAY MODE
-    <div class="icon-circle">☀</div>
-</div>
-
-<div class="toggle-btn night" onclick="window.location.href='?theme=dark'">
-    NIGHT MODE
-    <div class="icon-circle">🌙</div>
-</div>
-
-</div>
-"""
-
-st.markdown(toggle_html, unsafe_allow_html=True)
-
-if "theme" in st.query_params:
-    st.session_state.theme = st.query_params["theme"]
-    st.query_params.clear()
-    st.rerun()
-
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 LIGHT_THEME = """
