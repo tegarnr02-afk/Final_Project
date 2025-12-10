@@ -99,6 +99,13 @@ if "theme" in st.query_params:
 
 current = st.session_state.theme
 
+
+toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
+ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
+icon = "☀" if current == "light" else "🌙"
+text = "DAY MODE" if current == "light" else "NIGHT MODE"
+next_mode = "dark" if current == "light" else "light"
+
 toggle_html = f"""
 <div class="toggle-wrapper">
     <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
@@ -107,14 +114,6 @@ toggle_html = f"""
     </div>
 </div>
 """
-
-
-toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
-ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
-icon = "☀" if current == "light" else "🌙"
-text = "DAY MODE" if current == "light" else "NIGHT MODE"
-next_mode = "dark" if current == "light" else "light"
-
 st.markdown(
     f"""
     <div class="toggle-wrapper">
