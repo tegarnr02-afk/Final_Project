@@ -51,40 +51,6 @@ toggle_css = """
 }
 
 .toggle-ball {
-    width: 50px;# ============================
-# THEME TOGGLE (WORKING VERSION)
-# ============================
-
-if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
-
-toggle_css = """
-<style>
-.toggle-wrapper {
-    display:flex;
-    justify-content:flex-end;
-    width:100%;
-    margin-bottom:20px;
-}
-
-.toggle-switch {
-    width: 180px;
-    height: 60px;
-    background: linear-gradient(45deg, #1e3799, #4a69bd);
-    border-radius: 40px;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-
-.toggle-switch.light {
-    background: linear-gradient(45deg, #ff7675, #feca57);
-}
-
-.toggle-ball {
     width: 50px;
     height: 50px;
     background: white;
@@ -112,16 +78,24 @@ toggle_css = """
     color:white;
     pointer-events:none;
 }
+
 </style>
 
 <script>
-function switchTheme(mode){
-    window.parent.postMessage({"theme": mode}, "*");
+function setTheme(mode){
+    const params = new URLSearchParams(window.location.search);
+    params.set("theme", mode);
+    window.location.search = params.toString();
 }
 </script>
 """
 
 st.markdown(toggle_css, unsafe_allow_html=True)
+
+# Sync theme with URL
+if "theme" in st.query_params:
+    st.session_state.theme = st.query_params["theme"]
+    st.query_params.clear()
 
 current = st.session_state.theme
 
@@ -131,30 +105,34 @@ icon = "☀" if current == "light" else "🌙"
 text = "DAY MODE" if current == "light" else "NIGHT MODE"
 next_mode = "dark" if current == "light" else "light"
 
-def switch_theme():
-    st.session_state.theme = next_mode
-
-st.markdown(
-    f"""
-    <div class="toggle-wrapper">
-        <div class="{toggle_class}" onclick="switchTheme('{next_mode}')">
-            <div class="{ball_class}">{icon}</div>
-            <div class="mode-text">{text}</div>
-        </div>
+toggle_html = f"""
+<div class="toggle-wrapper">
+    <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
+        <div class="{ball_class}">{icon}</div>
+        <div class="mode-text">{text}</div>
     </div>
-    """,
-    unsafe_allow_html=True,
-)
+</div>
+"""
+
+
+
+st.markdown(toggle_html, unsafe_allow_html=True)
 
 LIGHT_THEME = """
 <style>
 .stApp { background-color: #ffffff !important; color: #000000 !important; }
+textarea, input, .stTextArea textarea {
+    background:#f3f3f3 !important; color:#000000 !important;
+}
 </style>
 """
 
 DARK_THEME = """
 <style>
-.stApp { background-color: #0f1720 !important; color: #ffffff !important; }
+.stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
+textarea, input, .stTextArea textarea {
+    background:#11131a !important; color:#e6eef8 !important;
+}
 </style>
 """
 
@@ -163,25 +141,6 @@ if st.session_state.theme == "dark":
 else:
     st.markdown(LIGHT_THEME, unsafe_allow_html=True)
 
-
-
-
-
-# CSS untuk tema
-
-# --- Style ---
-st.markdown(
-    """
-    <style>
-   
-  .big-title { font-size:36px; font-weight:700; }
-.sub { opacity:0.7; }
-
-    .card { padding:12px; border-radius:10px; background:#11131a; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 # --- Helper: stopwords fallback ---
 try:
