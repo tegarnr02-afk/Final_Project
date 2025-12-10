@@ -11,57 +11,53 @@ from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
+# --- Init session theme ---
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
+# --- Theme Switch Handler ---
 def switch_theme():
-    if st.session_state.theme == "dark":
-        st.session_state.theme = "light"
-    else:
-        st.session_state.theme = "dark"
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+
 
 
 
 def toggle_theme():
     st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
 
-# Custom CSS tombol toggle
 toggle_css = """
 <style>
-.toggle-wrapper {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
 
-.toggle-btn {
-    width: 160px;
-    height: 55px;
+.theme-toggle {
+    width: 180px;
+    height: 60px;
     border-radius: 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0px 18px;
     cursor: pointer;
-    padding: 0px 15px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 17px;
+    transition: all 0.4s ease-in-out;
+    user-select: none;
 }
 
-.day {
+.theme-light {
     background: linear-gradient(45deg, #ff6b81, #feca57);
     color: white;
-    border: 3px solid #ffa502;
+    border: 3px solid #ff9f43;
 }
 
-.night {
+.theme-dark {
     background: linear-gradient(45deg, #1e3799, #4a69bd);
     color: white;
     border: 3px solid #0c2461;
 }
 
 .icon-circle {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: white;
     display: flex;
@@ -69,10 +65,40 @@ toggle_css = """
     justify-content: center;
     font-size: 22px;
 }
+
 </style>
 """
 
+
 st.markdown(toggle_css, unsafe_allow_html=True)
+
+colT, _ = st.columns([1,5])
+
+with colT:
+    if st.session_state.theme == "light":
+        if st.button(" ",
+            key="toggle_theme_button",
+            help="Switch theme"):
+            switch_theme()
+
+        st.markdown("""
+        <div class="theme-toggle theme-light">
+            DAY MODE <div class="icon-circle">☀</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    else:
+        if st.button(" ",
+            key="toggle_theme_button_dark",
+            help="Switch theme"):
+            switch_theme()
+
+        st.markdown("""
+        <div class="theme-toggle theme-dark">
+            NIGHT MODE <div class="icon-circle">🌙</div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 # Buat tombol toggle
 day_clicked = st.button(" ", key="daybtn")
