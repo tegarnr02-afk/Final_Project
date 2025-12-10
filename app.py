@@ -402,6 +402,7 @@ st.markdown("---")
 # --- EDA (if sample dataset available) ---
 st.markdown("## Exploratory (Optional)")
 with st.expander("Upload sample CSV untuk EDA (sama file yg dipakai di training)"):
+
     sample_file = st.file_uploader("Upload sample dataset untuk EDA", type=["csv"], key="eda")
     if sample_file is not None:
         try:
