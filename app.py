@@ -92,10 +92,7 @@ function setTheme(mode){
 
 st.markdown(toggle_css, unsafe_allow_html=True)
 
-# Sync theme with URL
-if "theme" in st.query_params:
-    st.session_state.theme = st.query_params["theme"]
-    st.query_params.clear()
+
 
 current = st.session_state.theme
 
