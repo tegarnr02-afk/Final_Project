@@ -32,7 +32,6 @@ if "toggle" in st.query_params:
     st.rerun()
 
 
-Membuat toggle switch (seperti iPhone
 def switch_theme():
     if st.session_state.theme == "dark":
         st.session_state.theme = "light"
