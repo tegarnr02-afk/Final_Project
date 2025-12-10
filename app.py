@@ -117,20 +117,7 @@ toggle_html = f"""
 st.markdown(toggle_html, unsafe_allow_html=True)
 
 
-# DISPLAY TOGGLE
-colT1, colT2 = st.columns([1,3])
-with colT1:
-    st.write(" ")  # spacer
-with colT2:
-    st.markdown("<div class='toggle-container'>", unsafe_allow_html=True)
 
-    if st.button("☀ DAY MODE", key="day_mode"):
-        toggle_theme("light")
-
-    if st.button("🌙 NIGHT MODE", key="night_mode"):
-        toggle_theme("dark")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 LIGHT_THEME = """
