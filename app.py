@@ -255,7 +255,7 @@ with col1:
 
 with col2:
     st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=90)
-    st.markdown(toggle_html, unsafe_allow_html=True)
+
 
 
 st.markdown("---")
