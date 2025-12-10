@@ -12,9 +12,27 @@ from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
-if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+col_left, col_right = st.columns([1,9])
+with col_left:
+    checked = st.session_state["theme"] == "light"
 
+    toggle_html = f"""
+    <label class="switch">
+      <input type="checkbox" {'checked' if checked else ''} onchange="fetch('?toggle=1')">
+      <span class="slider"></span>
+    </label>
+    """
+
+    st.markdown(toggle_html, unsafe_allow_html=True)
+
+# Script to catch toggle
+if "toggle" in st.query_params:
+    toggle_theme()
+    st.query_params.clear()   # reset param
+    st.rerun()
+
+
+Membuat toggle switch (seperti iPhone
 def switch_theme():
     if st.session_state.theme == "dark":
         st.session_state.theme = "light"
@@ -60,6 +78,24 @@ textarea, input, .stTextArea textarea {
 .sub { color: #333333 !important; }
 </style>
 """
+# DARK vs LIGHT settings
+if st.session_state["theme"] == "dark":
+    bg = "#0f1720"
+    text = "#ffffff"
+    input_bg = "#1a1f27"
+    input_text = "#ffffff"
+    btn_bg = "#11131a"
+    btn_text = "#ffffff"
+else:
+    bg = "#ffffff"
+    text = "#000000"
+    input_bg = "#f0f0f0"
+    input_text = "#000000"
+    btn_bg = "#e6e6e6"
+    btn_text = "#000000"
+
+st.markdown(theme_css % (bg, text, input_bg, input_text, btn_bg, btn_text), unsafe_allow_html=True)
+
 
 if st.session_state.theme == "dark":
     st.markdown(DARK_THEME, unsafe_allow_html=True)
