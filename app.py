@@ -11,19 +11,69 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
-# -------- THEME SWITCHER (Dark / Light) --------
-if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark"   # default dark
 
-def set_theme(theme):
-    st.session_state["theme"] = theme
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+def switch_theme():
+    if st.session_state.theme == "dark":
+        st.session_state.theme = "light"
+    else:
+        st.session_state.theme = "dark"
+
+DARK_THEME = """
+<style>
+.stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
+
+textarea, input, .stTextArea textarea {
+    background-color:#11131a !important;
+    color:#e6eef8 !important;
+}
+
+.stButton>button {
+    background:#11131a !important;
+    color:white !important;
+    border:1px solid #444 !important;
+}
+
+.big-title { color: white !important; }
+.sub { color: #b9c4d9 !important; }
+</style>
+"""
+
+LIGHT_THEME = """
+<style>
+.stApp { background-color: #ffffff !important; color: #000000 !important; }
+
+textarea, input, .stTextArea textarea {
+    background-color:#f5f5f5 !important;
+    color:#000000 !important;
+}
+
+.stButton>button {
+    background:#e8e8e8 !important;
+    color:black !important;
+    border:1px solid #bbb !important;
+}
+
+.big-title { color: #000000 !important; }
+.sub { color: #333333 !important; }
+</style>
+"""
+
+if st.session_state.theme == "dark":
+    st.markdown(DARK_THEME, unsafe_allow_html=True)
+else:
+    st.markdown(LIGHT_THEME, unsafe_allow_html=True)
+
 
 # tombol pilih tema
-colT1, colT2 = st.columns([1,1])
-with colT1:
-    st.button("🌙 Dark Mode", on_click=lambda: set_theme("dark"))
-with colT2:
-    st.button("☀️ Light Mode", on_click=lambda: set_theme("light"))
+colD1, colD2 = st.columns([1,1])
+with colD1:
+    st.button("🌙 Dark Mode", on_click=switch_theme)
+with colD2:
+    st.button("🌞 Light Mode", on_click=switch_theme)
+
 
 # CSS untuk tema
 if st.session_state["theme"] == "dark":
