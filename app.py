@@ -11,86 +11,63 @@ from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
-# ============================
-# THEME TOGGLE (NEW CLEAN VERSION)
-# ============================
-# Init theme
+# --------------------------
+# FIXED: THEME TOGGLE (Streamlit native + CSS)
+# --------------------------
+
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
+# toggle streamlit
+theme_toggle = st.toggle(" ", value=(st.session_state.theme == "light"), key="theme_toggle")
 
-# =====================
-# PREMIUM MODERN TOGGLE
-# ======================
+# update theme based on toggle
+st.session_state.theme = "light" if theme_toggle else "dark"
 
+# CSS custom toggle
 toggle_css = """
 <style>
-
-.toggle-wrapper {
-    display:flex;
-    justify-content:flex-end;
-    margin-top:10px;
-    width:100%;
+.stToggle > label {
+    background-color: transparent !important;
 }
 
-.toggle-switch {
-    width: 180px;
-    height: 60px;
-    background: linear-gradient(45deg, #1e3799, #4a69bd);
-    border-radius: 40px;
-    padding: 5px;
-    display: flex;
-    align-items: center;
+.stToggle [data-testid="stWidgetLabel"] {
+    display:none;
+}
+
+.stToggle [role="switch"] {
+    width: 70px !important;
+    height: 32px !important;
+    background-color: #555 !important;
+    border-radius: 25px !important;
     position: relative;
+    transition: 0.2s ease;
     cursor: pointer;
-    transition: 0.3s ease-in-out;
 }
 
-.toggle-switch.light {
-    background: linear-gradient(45deg, #ff7675, #feca57);
+.stToggle [aria-checked="true"] {
+    background-color: #ffcc00 !important;
 }
 
-.toggle-ball {
-    width: 50px;
-    height: 50px;
+.stToggle [role="switch"]::after {
+    content: "";
+    width: 28px;
+    height: 28px;
     background: white;
     border-radius: 50%;
     position: absolute;
-    top: 5px;
-    left: 5px;
-    transition: 0.3s ease-in-out;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-    font-weight:900;
+    top: 2px;
+    left: 2px;
+    transition: 0.2s ease;
 }
 
-.toggle-ball.right {
-    left: 125px;
+.stToggle [aria-checked="true"]::after {
+    left: 40px !important;
 }
-
-.mode-text {
-    width:100%;
-    text-align:center;
-    font-weight:700;
-    font-size:17px;
-    color:white;
-    pointer-events:none;
-}
-
 </style>
-
-<script>
-function setTheme(mode){
-    const params = new URLSearchParams(window.location.search);
-    params.set("theme", mode);
-    window.location.search = params.toString();
-}
-</script>
 """
-
 st.markdown(toggle_css, unsafe_allow_html=True)
+
 
 # Sync theme via URL parameter (safe check)
 params = st.experimental_get_query_params()
