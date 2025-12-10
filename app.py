@@ -14,63 +14,108 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 # ============================
 # THEME TOGGLE (NEW CLEAN VERSION)
 # ============================
+# Init theme
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-def toggle_theme(mode):
-    st.session_state.theme = mode
-    st.rerun()
 
+# ===========================
+# MODERN PREMIUM TOGGLE (DAY / NIGHT MODE)
+# ===========================
 toggle_css = """
 <style>
-.toggle-container{
+
+.toggle-wrapper {
     display:flex;
-    gap:20px;
+    justify-content:flex-end;
     margin-top:10px;
-    margin-bottom:25px;
+    margin-bottom:15px;
+    width:100%;
 }
 
-/* TRANSITION */
-.toggle-btn{
-    width:180px;
-    height:60px;
-    border-radius:40px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0px 20px;
-    font-size:17px;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.25s ease-in-out;
+.toggle-switch {
+    width: 170px;
+    height: 60px;
+    background: linear-gradient(45deg, #1e3799, #4a69bd);
+    border-radius: 40px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
 }
 
-.day{
-    background:linear-gradient(45deg,#ff7675,#feca57);
-    color:white;
-    border:3px solid #ffa502;
+.toggle-switch.light {
+    background: linear-gradient(45deg, #ff7675, #feca57);
 }
 
-.night{
-    background:linear-gradient(45deg,#1e3799,#4a69bd);
-    color:white;
-    border:3px solid #0c2461;
-}
-
-.icon-circle{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    background:white;
+.toggle-ball {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    transition: 0.3s ease-in-out;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:20px;
+    font-size:24px;
 }
+
+.toggle-ball.right {
+    left: 115px;
+}
+
+.mode-text {
+    width:100%;
+    text-align:center;
+    font-weight:700;
+    font-size:17px;
+    color:white;
+    pointer-events:none;
+}
+
 </style>
+
+<script>
+function setTheme(mode){
+    const params = new URLSearchParams(window.location.search);
+    params.set("theme", mode);
+    window.location.search = params.toString();
+}
+</script>
 """
 
 st.markdown(toggle_css, unsafe_allow_html=True)
+
+# READ URL PARAM
+if "theme" in st.query_params:
+    st.session_state.theme = st.query_params["theme"]
+    st.query_params.clear()
+
+# Build toggle
+current = st.session_state.theme
+
+ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
+toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
+icon = "☀" if current == "light" else "🌙"
+text = "DAY MODE" if current == "light" else "NIGHT MODE"
+next_mode = "dark" if current == "light" else "light"
+
+toggle_html = f"""
+<div class="toggle-wrapper">
+    <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
+        <div class="{ball_class}">{icon}</div>
+        <div class="mode-text">{text}</div>
+    </div>
+</div>
+"""
+
+st.markdown(toggle_html, unsafe_allow_html=True)
+
 
 # DISPLAY TOGGLE
 colT1, colT2 = st.columns([1,3])
