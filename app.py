@@ -11,12 +11,29 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
+# --- Theme Toggle ---
+theme = st.sidebar.radio("Tema Aplikasi", ["Dark", "Light"], index=0)
+
+# --- Apply Theme ---
+if theme == "Dark":
+    st.markdown("""
+        <style>
+        .stApp { background-color: #0f1720; color: #e6eef8; }
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <style>
+        .stApp { background-color: #ffffff; color: #000000; }
+        </style>
+    """, unsafe_allow_html=True)
+
 
 # --- Style ---
 st.markdown(
     """
     <style>
-    .stApp { background-color: #0f1720; color: #e6eef8; }
+   
     .big-title { font-size:36px; font-weight:700; color: #ffffff; }
     .sub { color: #b9c4d9; }
     .card { padding:12px; border-radius:10px; background:#11131a; }
