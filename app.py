@@ -90,6 +90,7 @@ function setTheme(mode){
 </script>
 """
 
+st.markdown(toggle_css, unsafe_allow_html=True)
 
 # Sync theme with URL
 if "theme" in st.query_params:
@@ -97,9 +98,6 @@ if "theme" in st.query_params:
     st.query_params.clear()
 
 current = st.session_state.theme
-
-
-st.markdown(toggle_css, unsafe_allow_html=True)
 
 toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
 ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
