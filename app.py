@@ -99,6 +99,16 @@ if "theme" in st.query_params:
 
 current = st.session_state.theme
 
+toggle_html = f"""
+<div class="toggle-wrapper">
+    <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
+        <div class="{ball_class}">{icon}</div>
+        <div class="mode-text">{text}</div>
+    </div>
+</div>
+"""
+
+
 toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
 ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
 icon = "☀" if current == "light" else "🌙"
