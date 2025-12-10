@@ -117,7 +117,7 @@ toggle_html = f"""
 
 
 
-
+st.markdown(toggle_html, unsafe_allow_html=True)
 
 LIGHT_THEME = """
 <style>
