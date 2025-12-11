@@ -91,12 +91,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sinkronisasi toggle dgn session_state
-# nilai True = Light, False = Dark
-light_mode = st.session_state.theme == "light"
 
-# Update tema berdasarkan toggle
-st.session_state.theme = "light" if state_toggle else "dark"
 
 # Terapkan CSS tema
 if st.session_state.theme == "light":
