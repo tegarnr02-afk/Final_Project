@@ -14,21 +14,50 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 
 # ============================
-# SIMPLE THEME TOGGLE
+# BEAUTIFUL THEME TOGGLE
 # ============================
 # Init theme
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Simple toggle button in sidebar
+# Create a beautiful toggle in the sidebar that looks like the image
 with st.sidebar:
-    st.markdown("### ⚙️ Pengaturan")
+    st.markdown("---")
     
+    # Custom CSS for beautiful toggle
+    st.markdown("""
+    <style>
+    .theme-toggle-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Display current theme with custom styling
     current_theme = st.session_state.theme
     
-    if st.button(f"🌓 {'Mode Gelap' if current_theme == 'light' else 'Mode Terang'}", use_container_width=True):
-        st.session_state.theme = "light" if current_theme == "dark" else "dark"
-        st.rerun()
+    # Create columns for the toggle button
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("☀️ DAY MODE", 
+                    use_container_width=True,
+                    type="primary" if current_theme == "light" else "secondary",
+                    key="day_btn"):
+            st.session_state.theme = "light"
+            st.rerun()
+    
+    with col2:
+        if st.button("🌙 NIGHT MODE", 
+                    use_container_width=True,
+                    type="primary" if current_theme == "dark" else "secondary",
+                    key="night_btn"):
+            st.session_state.theme = "dark"
+            st.rerun()
+    
+    st.markdown("---")
 
 # ===========================
 # THEME STYLES
