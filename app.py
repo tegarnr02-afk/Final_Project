@@ -463,9 +463,7 @@ if model is None or tfidf is None:
     st.warning("⚠ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
     st.info("💡 Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl.")
 
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+
 # ===========================
 # SINGLE PREDICTION
 # ===========================
@@ -633,4 +631,7 @@ with st.expander("Upload sample CSV untuk EDA"):
             st.error(f"❌ Error EDA: {e}")
 
 st.markdown("---")
-st.caption("📌 Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
+st.caption("📌 Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")\
+if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+    st.rerun()
