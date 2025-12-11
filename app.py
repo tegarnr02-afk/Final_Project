@@ -36,6 +36,10 @@ window.addEventListener("message", (event) => {
 </script>
 """, height=0)
 
+# << TAMBAHKAN INI >>
+msg = st.experimental_get_query_params().get("streamlit_event", [None])[0]
+if msg:
+    st.session_state["_streamlit_event"] = msg
 
 if "_streamlit_event" not in st.session_state:
     st.session_state["_streamlit_event"] = None
@@ -46,6 +50,7 @@ if event == "toggleTheme":
     st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
     st.session_state["_streamlit_event"] = None
     st.rerun()
+
 
 
 
