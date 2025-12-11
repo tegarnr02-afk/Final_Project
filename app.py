@@ -7,7 +7,6 @@ import io
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 from wordcloud import WordCloud
-from streamlit_js_eval import streamlit_js_eval
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
@@ -15,12 +14,15 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 
 # ============================
-# THEME TOGGLE (NEW CLEAN VERSION)
+# THEME TOGGLE (FIXED VERSION)
 # ============================
 # Init theme
-# Inisialisasi tema
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
+
+# Check if theme was just changed (to trigger rerun)
+if "prev_theme" not in st.session_state:
+    st.session_state.prev_theme = st.session_state.theme
 
 checked = "checked" if st.session_state.theme == "light" else ""
 
@@ -89,32 +91,44 @@ document.getElementById("themeSwitch").addEventListener("change", function() {{
 """,
 height=120)
 
-current_toggle = streamlit_js_eval(
-    js_code="""
-    window.addEventListener('message', (e)=>{
-        if (e.data && e.data.themeToggle){
-            window.themeFromJS = e.data.themeToggle;
-        }
-    });
-    """,
-    key="listener"
-)
+# Listen for theme changes from JavaScript
+import time
+current_time = time.time()
 
+# Use a unique key based on current time to force re-evaluation
 theme_value = streamlit_js_eval(
-    js_code="window.themeFromJS ?? null",
-    key="pull_theme"
+    js_code="""
+    (function() {
+        return new Promise((resolve) => {
+            const checkTheme = () => {
+                if (window.themeFromJS) {
+                    resolve(window.themeFromJS);
+                } else {
+                    setTimeout(checkTheme, 100);
+                }
+            };
+            
+            window.addEventListener('message', (e) => {
+                if (e.data && e.data.themeToggle) {
+                    window.themeFromJS = e.data.themeToggle;
+                    resolve(e.data.themeToggle);
+                }
+            });
+            
+            setTimeout(() => resolve(null), 1000);
+        });
+    })();
+    """,
+    key=f"theme_check_{current_time}"
 )
 
-
-
-st.write("Theme now:", st.session_state.theme)
-
-
+# Update theme if changed
 if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
     st.session_state.theme = theme_value
+    st.rerun()
 
 # ===========================
-# THEME OVERRIDE FIXED
+# THEME STYLES
 # ===========================
 
 if st.session_state.theme == "light":
@@ -145,6 +159,11 @@ if st.session_state.theme == "light":
         color: #000000 !important;
     }
 
+    /* TEXT */
+    p, div, span, label {
+        color: #000000 !important;
+    }
+
     /* TABLES */
     .dataframe, .stDataFrame {
         background-color: #ffffff !important;
@@ -156,6 +175,12 @@ if st.session_state.theme == "light":
         background-color: #ffcc33 !important;
         color: black !important;
         border-radius: 6px !important;
+    }
+
+    /* TEXT AREA */
+    textarea {
+        background-color: #f9f9f9 !important;
+        color: #000000 !important;
     }
 
     </style>
@@ -188,6 +213,11 @@ else:
         background-color: #0f1720 !important;
     }
 
+    /* TEXT */
+    p, div, span, label {
+        color: #e6eef8 !important;
+    }
+
     /* TABLES */
     .dataframe, .stDataFrame {
         background-color: #11131a !important;
@@ -199,6 +229,12 @@ else:
         background-color: #3a3a3a !important;
         color: white !important;
         border-radius: 6px !important;
+    }
+
+    /* TEXT AREA */
+    textarea {
+        background-color: #1a1f2e !important;
+        color: #e6eef8 !important;
     }
 
     </style>
@@ -493,4 +529,4 @@ with st.expander("Upload sample CSV untuk EDA (sama file yg dipakai di training)
             st.error(f"Error EDA: {e}")
 
 st.markdown("---")
-st.write("About: Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
+st.write("About: Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
