@@ -90,15 +90,22 @@ document.getElementById("themeSwitch").addEventListener("change", function() {{
 height=120)
 
 current_toggle = streamlit_js_eval(
-    js_code="window.addEventListener('message', (e)=>{ window.themeFromJS = e.data.themeToggle; return window.themeFromJS; })",
+    js_code="""
+    window.parent.window.addEventListener('message', (e)=>{
+        if (e.data && e.data.themeToggle){
+            window.parent.window.themeFromJS = e.data.themeToggle;
+        }
+        return window.parent.window.themeFromJS;
+    });
+    """,
     key="listener"
 )
 
-
 theme_value = streamlit_js_eval(
-    js_code="window.themeFromJS ?? null",
+    js_code="window.parent.window.themeFromJS ?? null",
     key="pull_theme"
 )
+
 
 st.write("Theme now:", st.session_state.theme)
 
