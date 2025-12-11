@@ -18,7 +18,18 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Hidden button for theme toggle (moved to bottom, invisible)
+# Hidden button for theme toggle - completely hidden with CSS
+st.markdown("""
+<style>
+button[kind="secondary"][title="Toggle Theme"] {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
     st.rerun()
