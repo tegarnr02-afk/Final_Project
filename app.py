@@ -11,8 +11,18 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
-# Hidden rerun trigger
-rerun = st.button("___rerun___", key="rerun_hidden", help="", disabled=True, type="secondary")
+
+st.markdown("""
+<style>
+#rerun_hidden { 
+    visibility: hidden;
+    height: 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
+rerun = st.button("rerun", key="rerun_hidden")
+
 
 # ============================
 # THEME TOGGLE (NEW CLEAN VERSION)
@@ -97,17 +107,21 @@ st.markdown(f"""
 
 st.markdown("""
 <script>
-const toggle = window.parent.document.getElementById("themeSwitch");
+const toggle = document.getElementById("themeSwitch");
 
 if (toggle) {
     toggle.onchange = () => {
         window.streamlitToggle = toggle.checked ? "light" : "dark";
-        const btn = window.parent.document.querySelector('button[kind="secondary"][disabled]');
-        if (btn) btn.click();
+
+        // Trigger Python rerun
+        const rerunBtn = document.querySelector('#rerun_hidden');
+        if (rerunBtn) rerunBtn.click();
     };
 }
 </script>
 """, unsafe_allow_html=True)
+
+
 
 
 
