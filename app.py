@@ -82,14 +82,17 @@ input:checked + .slider:before {
 
 st.markdown(toggle_css, unsafe_allow_html=True)
 
-st.markdown("""
+checked = "checked" if st.session_state.theme == "light" else ""
+
+st.markdown(f"""
 <div class="theme-toggle-container">
     <label class="switch">
-      <input type="checkbox" id="themeSwitch">
+      <input type="checkbox" id="themeSwitch" {checked}>
       <span class="slider"></span>
     </label>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
@@ -120,30 +123,6 @@ if "theme" in params:
     st.session_state.theme = params["theme"][0]
     st.experimental_set_query_params()  # clear params
 
-
-
-
-
-current = st.session_state.theme
-
-toggle_class = "toggle-switch light" if current == "light" else "toggle-switch"
-ball_class = "toggle-ball right" if current == "light" else "toggle-ball"
-icon = "☀" if current == "light" else "🌙"
-text = "DAY MODE" if current == "light" else "NIGHT MODE"
-next_mode = "dark" if current == "light" else "light"
-
-toggle_html = f"""
-<div class="toggle-wrapper">
-    <div class="{toggle_class}" onclick="setTheme('{next_mode}')">
-        <div class="{ball_class}">{icon}</div>
-        <div class="mode-text">{text}</div>
-    </div>
-</div>
-"""
-
-
-
-st.markdown(toggle_html, unsafe_allow_html=True)
 
 new_theme = streamlit_js_eval(
     js_code="""
