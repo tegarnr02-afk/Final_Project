@@ -16,30 +16,34 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 # THEME TOGGLE SYSTEM
 # ============================
 if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+    st.session_state.theme = "light"
 
-# Hidden button for theme toggle - completely hidden with CSS
-# Hidden button placed at the very bottom with aggressive hiding
-st.markdown("""
-<style>
-/* Aggressively hide the hidden toggle button */
-div[data-testid="stVerticalBlock"]:has(button[title="Toggle Theme"]) {
-    display: none !important;
-}
-button[title="Toggle Theme"] {
-    display: none !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    left: -99999px !important;
-    top: -99999px !important;
-    width: 0px !important;
-    height: 0px !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    z-index: -9999 !important;
-}
-</style>
-""", unsafe_allow_html=True)
+# Listener event dari HTML toggle
+components.html("""
+<script>
+window.addEventListener("message", (event) => {
+    if (event.data?.type === "streamlit:toggleTheme") {
+        window.parent.postMessage(
+            {
+                isStreamlitMessage: true,
+                type: "streamlit_event",
+                event: "toggleTheme"
+            },
+            "*"
+        );
+    }
+});
+</script>
+""", height=0)
+
+
+event = st.session_state.get("_streamlit_event")
+
+if event == "toggleTheme":
+    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+    st.session_state["_streamlit_event"] = None
+    st.rerun()
+
 
 
 
@@ -401,46 +405,27 @@ with col2:
         </div>
         
         <script>
-        function toggleTheme() {{
-            const wrapper = document.getElementById('toggleWrapper');
-            const sliderText = document.getElementById('sliderText');
-            
-            // Toggle visual immediately
-            if (wrapper.classList.contains('night-mode')) {{
-                wrapper.classList.remove('night-mode');
-                sliderText.textContent = 'DAY';
-            }} else {{
-                wrapper.classList.add('night-mode');
-                sliderText.textContent = 'NIGHT';
-            }}
-            
-            // Find and click Streamlit button
-            setTimeout(() => {{
-                try {{
-                    const parentDoc = window.parent.document;
-                    let themeButton = null;
-                    
-                    themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
-                    
-                    if (!themeButton) {{
-                        const allButtons = parentDoc.querySelectorAll('button');
-                        for (let btn of allButtons) {{
-                            const btnText = btn.innerText || btn.textContent || '';
-                            if (btnText.includes('🌓')) {{
-                                themeButton = btn;
-                                break;
-                            }}
-                        }}
-                    }}
-                    
-                    if (themeButton) {{
-                        themeButton.click();
-                    }}
-                }} catch(e) {{
-                    console.error('Error toggling theme:', e);
-                }}
-            }}, 50);
-        }}
+        function toggleTheme() {
+    const wrapper = document.getElementById('toggleWrapper');
+    const sliderText = document.getElementById('sliderText');
+    
+    // Toggle visual
+    if (wrapper.classList.contains('night-mode')) {
+        wrapper.classList.remove('night-mode');
+        sliderText.textContent = 'DAY';
+    } else {
+        wrapper.classList.add('night-mode');
+        sliderText.textContent = 'NIGHT';
+    }
+
+    // Kirim event ke Streamlit
+    window.parent.postMessage(
+        { type: "streamlit:toggleTheme" },
+        "*"
+    );
+}
+
+    
         </script>
         </body>
         </html>
