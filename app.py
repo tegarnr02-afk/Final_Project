@@ -429,9 +429,57 @@ st.markdown("---")
 # Sidebar: Model upload
 
 with st.sidebar:
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+    toggle_html_sidebar = f"""
+    <div class="theme-toggle-container">
+        <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}"
+             id="toggleWrapper" onclick="toggleTheme()">
+            <div class="toggle-slider" id="toggleSlider">
+                <span id="sliderText">{'NIGHT' if st.session_state.theme == 'dark' else 'DAY'}</span>
+            </div>
+            <div class="toggle-option toggle-option-left">
+                <span class="toggle-icon">☀️</span><span>DAY</span>
+            </div>
+            <div class="toggle-option toggle-option-right">
+                <span class="toggle-icon">🌙</span><span>NIGHT</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleTheme() {
+        const wrapper = document.getElementById('toggleWrapper');
+        const sliderText = document.getElementById('sliderText');
+
+        if (wrapper.classList.contains('night-mode')) {
+            wrapper.classList.remove('night-mode');
+            sliderText.textContent = 'DAY';
+        } else {
+            wrapper.classList.add('night-mode');
+            sliderText.textContent = 'NIGHT';
+        }
+
+        setTimeout(() => {
+            try {
+                const doc = window.parent.document;
+                let btn = doc.querySelector('button[title="Toggle Theme"]');
+                if (!btn) {
+                    for (let b of doc.querySelectorAll('button')) {
+                        if ((b.innerText || '').includes('🌓')) { btn = b; break; }
+                    }
+                }
+                if (btn) btn.click();
+            } catch(e) { console.error(e); }
+        }, 50);
+    }
+    </script>
+    """
+
+    components.html(toggle_html_sidebar, height=60, scrolling=False)
+
+    if st.button("🌓", key="hidden_theme_toggle"):
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+        st.rerun()
+
 with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
     
     st.write("Model & TF-IDF harus tersedia:")
