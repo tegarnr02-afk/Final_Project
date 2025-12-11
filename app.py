@@ -102,39 +102,6 @@ theme_value = streamlit_js_eval(
 if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
     st.session_state.theme = theme_value
 
-
-
-
-
-
-
-
-
-
-
-LIGHT_THEME = """
-<style>
-.stApp { background-color: #ffffff !important; color: #000000 !important; }
-textarea, input, .stTextArea textarea {
-    background:#f3f3f3 !important; color:#000000 !important;
-}
-</style>
-"""
-
-DARK_THEME = """
-<style>
-.stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
-textarea, input, .stTextArea textarea {
-    background:#11131a !important; color:#e6eef8 !important;
-}
-</style>
-"""
-
-if st.session_state.theme == "dark":
-    st.markdown(DARK_THEME, unsafe_allow_html=True)
-else:
-    st.markdown(LIGHT_THEME, unsafe_allow_html=True)
-
 # ===========================
 # THEME OVERRIDE FIXED
 # ===========================
