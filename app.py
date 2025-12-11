@@ -14,50 +14,229 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 
 # ============================
-# BEAUTIFUL THEME TOGGLE
+# BEAUTIFUL THEME TOGGLE (Like Image)
 # ============================
 # Init theme
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Create a beautiful toggle in the sidebar that looks like the image
+# Beautiful toggle switch HTML
+checked = "checked" if st.session_state.theme == "light" else ""
+
+toggle_html = f"""
+<style>
+.theme-toggle-container {{
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px 20px 10px 20px;
+    background: transparent;
+}}
+
+.toggle-wrapper {{
+    position: relative;
+    width: 320px;
+    height: 65px;
+    background: linear-gradient(90deg, #ff6b9d 0%, #ffa06b 50%, #ffd93d 100%);
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    overflow: hidden;
+}}
+
+.toggle-wrapper.night-mode {{
+    background: linear-gradient(90deg, #2a5298 0%, #1e3c72 50%, #4facfe 100%);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}}
+
+.toggle-slider {{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 145px;
+    height: 55px;
+    background: white;
+    border-radius: 50px;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 13px;
+    color: #ff6b9d;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}}
+
+.toggle-wrapper.night-mode .toggle-slider {{
+    left: 170px;
+    color: #2a5298;
+}}
+
+.toggle-option {{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    transition: all 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}}
+
+.toggle-option-left {{
+    left: 25px;
+}}
+
+.toggle-option-right {{
+    right: 25px;
+}}
+
+.toggle-wrapper.night-mode .toggle-option-left {{
+    opacity: 0.6;
+}}
+
+.toggle-wrapper:not(.night-mode) .toggle-option-right {{
+    opacity: 0.6;
+}}
+
+.toggle-icon {{
+    font-size: 26px;
+    line-height: 1;
+}}
+
+.sun-icon {{
+    animation: rotate 20s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}}
+
+.moon-icon {{
+    animation: pulse 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}}
+
+@keyframes rotate {{
+    from {{ transform: rotate(0deg); }}
+    to {{ transform: rotate(360deg); }}
+}}
+
+@keyframes pulse {{
+    0%, 100% {{ opacity: 1; }}
+    50% {{ opacity: 0.7; }}
+}}
+
+.toggle-wrapper:hover {{
+    transform: scale(1.03);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+}}
+
+.toggle-wrapper:active {{
+    transform: scale(0.98);
+}}
+
+/* Hide default checkbox */
+#themeCheckbox {{
+    display: none;
+}}
+</style>
+
+<div class="theme-toggle-container">
+    <input type="checkbox" id="themeCheckbox" {checked} onchange="toggleTheme(this)">
+    <label for="themeCheckbox">
+        <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper">
+            <div class="toggle-slider" id="toggleSlider">
+                <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
+            </div>
+            <div class="toggle-option toggle-option-left">
+                <span class="toggle-icon sun-icon">☀️</span>
+                <span>DAY MODE</span>
+            </div>
+            <div class="toggle-option toggle-option-right">
+                <span class="toggle-icon moon-icon">🌙</span>
+                <span>NIGHT MODE</span>
+            </div>
+        </div>
+    </label>
+</div>
+
+<script>
+let currentTheme = "{'dark' if st.session_state.theme == 'dark' else 'light'}";
+
+function toggleTheme(checkbox) {{
+    const wrapper = document.getElementById('toggleWrapper');
+    const sliderText = document.getElementById('sliderText');
+    
+    if (checkbox.checked) {{
+        wrapper.classList.remove('night-mode');
+        sliderText.textContent = 'DAY MODE';
+        currentTheme = 'light';
+    }} else {{
+        wrapper.classList.add('night-mode');
+        sliderText.textContent = 'NIGHT MODE';
+        currentTheme = 'dark';
+    }}
+    
+    // Send message to parent window
+    window.parent.postMessage({{
+        type: 'streamlit:setComponentValue',
+        key: 'theme_toggle',
+        value: currentTheme
+    }}, '*');
+    
+    // Alternative: trigger hash change for Streamlit to detect
+    window.location.hash = 'theme_' + currentTheme + '_' + Date.now();
+}}
+
+// Listen for clicks on the wrapper too
+document.getElementById('toggleWrapper').addEventListener('click', function(e) {{
+    const checkbox = document.getElementById('themeCheckbox');
+    checkbox.checked = !checkbox.checked;
+    toggleTheme(checkbox);
+}});
+</script>
+"""
+
+# Display the beautiful toggle
+components.html(toggle_html, height=100)
+
+# Add a callback mechanism using query params
+import time
+if 'last_check' not in st.session_state:
+    st.session_state.last_check = time.time()
+
+# Simple polling mechanism - check every render
+current_time = time.time()
+if current_time - st.session_state.last_check > 0.5:  # Check every 0.5 seconds
+    # Try to get theme from URL hash (if set by JavaScript)
+    try:
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+        ctx = get_script_run_ctx()
+        if ctx:
+            st.session_state.last_check = current_time
+    except:
+        pass
+
+# Sidebar fallback buttons (hidden by default but work as backup)
 with st.sidebar:
     st.markdown("---")
+    st.markdown("**Atau gunakan tombol di bawah:**")
     
-    # Custom CSS for beautiful toggle
-    st.markdown("""
-    <style>
-    .theme-toggle-wrapper {
-        display: flex;
-        justify-content: center;
-        margin: 20px 0;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Display current theme with custom styling
-    current_theme = st.session_state.theme
-    
-    # Create columns for the toggle button
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("☀️ DAY MODE", 
-                    use_container_width=True,
-                    type="primary" if current_theme == "light" else "secondary",
-                    key="day_btn"):
+        if st.button("☀️ Day", use_container_width=True, key="day_btn_backup"):
             st.session_state.theme = "light"
             st.rerun()
     
     with col2:
-        if st.button("🌙 NIGHT MODE", 
-                    use_container_width=True,
-                    type="primary" if current_theme == "dark" else "secondary",
-                    key="night_btn"):
+        if st.button("🌙 Night", use_container_width=True, key="night_btn_backup"):
             st.session_state.theme = "dark"
             st.rerun()
-    
-    st.markdown("---")
 
 # ===========================
 # THEME STYLES
