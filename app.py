@@ -18,10 +18,7 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Hidden button for theme toggle (moved to bottom, invisible)
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+
 
 # ===========================
 # THEME STYLES
@@ -430,6 +427,11 @@ with col2:
 st.markdown("---")
 
 # Sidebar: Model upload
+# Hidden button for theme toggle (moved to bottom, invisible)
+if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+    st.rerun()
+
 with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
     st.write("Model & TF-IDF harus tersedia:")
     uploaded_model = st.file_uploader("Upload model.pkl", type=["pkl","pickle"], key="m1")
