@@ -631,9 +631,7 @@ with st.expander("Upload sample CSV untuk EDA"):
             st.pyplot(fig)
         except Exception as e:
             st.error(f"❌ Error EDA: {e}")
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+
 
 st.markdown("---")
 st.caption("📌 Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
