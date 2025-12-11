@@ -227,10 +227,10 @@ tfidf = None
 col1, col2 = st.columns([3,1])
 with col1:
     st.markdown('<h1>🛒 Amazon Review Sentiment Analysis</h1>', unsafe_allow_html=True)
-    st.markdown("Masukkan review atau upload CSV berisi kolom review untuk mendapatkan prediksi sentimen.")
+    st.markdown("Enter a review or upload a CSV file containing a review column to get sentiment predictions.")
 
 with col2:
-    # Logo dan toggle dalam satu kolom
+    # Logo and toggle in one column
     subcol1, subcol2 = st.columns([1, 1])
     with subcol1:
         st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=70)
@@ -429,8 +429,8 @@ st.markdown("---")
 with st.sidebar:
     st.markdown("### 🎨 Theme")
     
-    # Tombol toggle tema (di atas Model/Vectorizer)
-    if st.button("🌓Dark/Light", key="hidden_theme_toggle", help="Toggle Theme"):
+    # Theme toggle button (above Model/Vectorizer)
+    if st.button("🌓 Dark/Light", key="hidden_theme_toggle", help="Toggle Theme"):
         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
 
@@ -438,10 +438,10 @@ with st.sidebar:
 
 # Sidebar: Model upload
 with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
-    st.write("Model & TF-IDF harus tersedia:")
+    st.write("Model & TF-IDF must be available:")
     uploaded_model = st.file_uploader("Upload model.pkl", type=["pkl","pickle"], key="m1")
     uploaded_tfidf = st.file_uploader("Upload tfidf.pkl", type=["pkl","pickle"], key="v1")
-    use_local = st.checkbox("Gunakan file lokal (model.pkl & tfidf.pkl)", value=True)
+    use_local = st.checkbox("Use local files (model.pkl & tfidf.pkl)", value=True)
 
 if use_local:
     try:
@@ -458,26 +458,26 @@ if use_local:
 if uploaded_model is not None:
     try:
         model = load_pickle(uploaded_model)
-        st.sidebar.success("✅ Model ter-upload")
+        st.sidebar.success("✅ Model uploaded")
     except Exception as e:
-        st.sidebar.error(f"❌ Gagal load model: {e}")
+        st.sidebar.error(f"❌ Failed to load model: {e}")
 
 if uploaded_tfidf is not None:
     try:
         tfidf = load_pickle(uploaded_tfidf)
-        st.sidebar.success("✅ TF-IDF ter-upload")
+        st.sidebar.success("✅ TF-IDF uploaded")
     except Exception as e:
-        st.sidebar.error(f"❌ Gagal load tfidf: {e}")
+        st.sidebar.error(f"❌ Failed to load tfidf: {e}")
 
 if model is None or tfidf is None:
-    st.warning("⚠ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
-    st.info("💡 Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl.")
+    st.warning("⚠ Model or TF-IDF not yet available. Upload both or place model.pkl & tfidf.pkl in the application folder.")
+    st.info("💡 If you don't have them yet, run the training in Colab then download model.pkl and tfidf.pkl.")
 
 
 # ===========================
 # SINGLE PREDICTION
 # ===========================
-st.markdown("### 📝 Masukkan review produk:")
+st.markdown("### 📝 Enter product review:")
 
 if "review_box" not in st.session_state:
     st.session_state["review_box"] = ""
@@ -489,11 +489,11 @@ with colA:
         "Review:",
         height=140,
         key="review_box",
-        placeholder="Contoh: The product stopped working after 2 days. Very disappointed."
+        placeholder="Example: The product stopped working after 2 days. Very disappointed."
     )
 
 with colB:
-    st.write("*Aksi:*")
+    st.write("*Actions:*")
 
     def reset_input():
         st.session_state["review_box"] = ""
@@ -528,20 +528,20 @@ with colB:
         )
         st.session_state["review_box"] = random.choice(all_reviews)
 
-    st.button("🎲 Contoh", on_click=random_example, use_container_width=True)
+    st.button("🎲 Example", on_click=random_example, use_container_width=True)
 
-if st.button("🔍 Prediksi Sentimen", use_container_width=True):
+if st.button("🔍 Predict Sentiment", use_container_width=True):
     if model is None or tfidf is None:
-        st.error("❌ Model atau TF-IDF belum tersedia.")
+        st.error("❌ Model or TF-IDF not yet available.")
     else:
         if not isinstance(text_input, str) or text_input.strip() == "":
-            st.error("❌ Masukkan teks review terlebih dahulu.")
+            st.error("❌ Please enter review text first.")
         else:
             cleaned = clean_text(text_input)
             try:
                 vec = tfidf.transform([cleaned])
             except Exception as e:
-                st.error(f"❌ Error saat transform: {e}")
+                st.error(f"❌ Error during transform: {e}")
                 st.stop()
 
             try:
@@ -549,43 +549,43 @@ if st.button("🔍 Prediksi Sentimen", use_container_width=True):
                 pred = preds[0]
                 proba_map = {classes[i]: float(probs[0,i]) for i in range(len(classes))}
                 
-                st.success(f"*Prediksi Sentimen:* {pred.upper()}")
+                st.success(f"*Predicted Sentiment:* {pred.upper()}")
                 st.markdown("*Confidence:*")
                 dfc = pd.DataFrame.from_dict(proba_map, orient="index", columns=["probability"]).sort_values("probability", ascending=False)
                 st.table((dfc*100).round(2))
                 st.bar_chart(dfc["probability"])
             except Exception as e:
-                st.error(f"❌ Gagal memprediksi: {e}")
+                st.error(f"❌ Prediction failed: {e}")
 
 st.markdown("---")
 
 # ===========================
 # BATCH PREDICTION
 # ===========================
-st.markdown("## 📊 Prediksi Batch (Upload CSV)")
-st.write("Upload CSV berisi kolom teks review.")
+st.markdown("## 📊 Batch Prediction (Upload CSV)")
+st.write("Upload a CSV file containing a review text column.")
 
-uploaded_csv = st.file_uploader("Upload CSV untuk batch prediksi", type=["csv"])
+uploaded_csv = st.file_uploader("Upload CSV for batch prediction", type=["csv"])
 if uploaded_csv is not None:
     try:
         df_upload = pd.read_csv(uploaded_csv)
-        st.write("*Preview data:*")
+        st.write("*Data preview:*")
         st.dataframe(df_upload.head())
         
         col_options = list(df_upload.columns)
-        chosen_col = st.selectbox("Pilih kolom yang berisi review", col_options)
-        n_preview = st.number_input("Jumlah baris preview", min_value=1, max_value=500, value=10)
+        chosen_col = st.selectbox("Select the column containing reviews", col_options)
+        n_preview = st.number_input("Number of rows to preview", min_value=1, max_value=500, value=10)
         
-        if st.button("▶ Jalankan prediksi batch"):
+        if st.button("▶ Run batch prediction"):
             if model is None or tfidf is None:
-                st.error("❌ Model / TF-IDF belum tersedia.")
+                st.error("❌ Model / TF-IDF not yet available.")
             else:
                 texts = df_upload[chosen_col].fillna("").astype(str).tolist()
                 cleaned_texts = [clean_text(t) for t in texts]
                 try:
                     X_vec = tfidf.transform(cleaned_texts)
                 except Exception as e:
-                    st.error(f"❌ Error saat transform batch: {e}")
+                    st.error(f"❌ Error during batch transform: {e}")
                     st.stop()
                     
                 probs, preds, classes = get_proba_and_pred(model, X_vec)
@@ -594,13 +594,13 @@ if uploaded_csv is not None:
                 out["pred_sentiment"] = preds
                 out = pd.concat([out, proba_df], axis=1)
                 
-                st.success("✅ Selesai! Preview hasil:")
+                st.success("✅ Complete! Results preview:")
                 st.dataframe(out.head(n_preview))
                 
                 csv_bytes = out.to_csv(index=False).encode("utf-8")
-                st.download_button("⬇ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
+                st.download_button("⬇ Download results (CSV)", csv_bytes, "prediction_results.csv", "text/csv")
     except Exception as e:
-        st.error(f"❌ Gagal membaca CSV: {e}")
+        st.error(f"❌ Failed to read CSV: {e}")
 
 st.markdown("---")
 
@@ -608,7 +608,7 @@ st.markdown("---")
 # EDA SECTION
 # ===========================
 st.markdown("## 📈 Exploratory Data Analysis (Optional)")
-with st.expander("Upload sample CSV untuk EDA"):
+with st.expander("Upload sample CSV for EDA"):
     sample_file = st.file_uploader("Upload sample dataset", type=["csv"], key="eda")
     if sample_file is not None:
         try:
@@ -618,9 +618,9 @@ with st.expander("Upload sample CSV untuk EDA"):
             
             possible = [c for c in df_s.columns if any(k in c.lower() for k in ["review","text","comment"])]
             if len(possible) == 0:
-                chosen = st.selectbox("Pilih kolom teks", df_s.columns)
+                chosen = st.selectbox("Select text column", df_s.columns)
             else:
-                chosen = st.selectbox("Pilih kolom teks", possible)
+                chosen = st.selectbox("Select text column", possible)
                 
             if model is not None and tfidf is not None:
                 texts = df_s[chosen].fillna("").astype(str).tolist()
@@ -628,7 +628,7 @@ with st.expander("Upload sample CSV untuk EDA"):
                 X_vec = tfidf.transform(cleaned_texts)
                 probs, preds, classes = get_proba_and_pred(model, X_vec)
                 df_s["pred_sentiment"] = preds
-                st.write("*Distribusi prediksi:*")
+                st.write("*Prediction distribution:*")
                 st.bar_chart(df_s["pred_sentiment"].value_counts())
                 
             text_all = " ".join(df_s[chosen].fillna("").astype(str).tolist())
@@ -638,8 +638,8 @@ with st.expander("Upload sample CSV untuk EDA"):
             ax.axis("off")
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error EDA: {e}")
+            st.error(f"❌ EDA Error: {e}")
 
 
 st.markdown("---")
-st.caption("📌 Aplikasi ini untuk demo final project. Pastikan model.pkl & tfidf.pkl cocok (dilatih dengan TF-IDF yang sama).")
+st.caption("📌 This application is for final project demo. Ensure model.pkl & tfidf.pkl are compatible (trained with the same TF-IDF).")
