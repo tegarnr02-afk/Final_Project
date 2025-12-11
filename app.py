@@ -18,7 +18,6 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "light"
 
-# Listener event dari HTML toggle
 components.html("""
 <script>
 window.addEventListener("message", (event) => {
@@ -33,7 +32,8 @@ window.addEventListener("message", (event) => {
         );
     }
 });
-</script>, height=0)
+</script>
+""", height=0)
 
 # << TAMBAHKAN INI >>
 msg = st.experimental_get_query_params().get("streamlit_event", [None])[0]
