@@ -20,85 +20,86 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# UI toggle
-st.markdown("""
-<label class="switch">
-  <input type="checkbox" id="themeSwitch">
-  <span class="slider round"></span>
-</label>
+# =====================
+# CUSTOM BEAUTY TOGGLE
+# =====================
 
+toggle_css = """
 <style>
+.theme-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 0;
+}
+
 .switch {
   position: relative;
   display: inline-block;
-  width: 70px;
-  height: 34px;
+  width: 90px;
+  height: 40px;
+  cursor: pointer;
 }
-.switch input { display:none; }
+
+.switch input {display: none;}
+
 .slider {
   position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #333;
-  border-radius: 34px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, #1f1f1f, #3a3a3a);
+  border-radius: 40px;
+  transition: 0.4s ease-in-out;
 }
+
 .slider:before {
   position: absolute;
   content: "🌙";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background: white;
+  height: 34px;
+  width: 34px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
   border-radius: 50%;
-  transition: .4s;
+  transition: 0.4s ease-in-out;
+  font-size: 20px;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
 }
+
 input:checked + .slider {
-  background-color: #f5d142;
+  background: linear-gradient(45deg, #ffb347, #ffcc33);
 }
+
 input:checked + .slider:before {
-  transform: translateX(36px);
-  content:"☀";
+  transform: translateX(50px);
+  content: "☀";
 }
 </style>
+"""
+
+st.markdown(toggle_css, unsafe_allow_html=True)
+
+st.markdown("""
+<div class="theme-toggle-container">
+    <label class="switch">
+      <input type="checkbox" id="themeSwitch">
+      <span class="slider"></span>
+    </label>
+</div>
 """, unsafe_allow_html=True)
 
-# Detect klik JS → update python session_state
-clicked = streamlit_js_eval(js_code="""
-() => {
-    let sw = document.getElementById("themeSwitch");
-    return sw.checked;
-}
-""")
+# Sinkronisasi toggle dgn session_state
+# nilai True = Light, False = Dark
+light_mode = st.session_state.theme == "light"
 
-# Ubah tema
-if clicked:
-    st.session_state.theme = "light"
-else:
-    st.session_state.theme = "dark"
+# toggle streamlit (tak terlihat, hanya backend)
+state_toggle = st.toggle("___", value=light_mode, label_visibility="collapsed")
 
-# Terapkan tema
-if st.session_state.theme == "light":
-    st.markdown("""
-    <style>
-    .stApp {
-        background-color:#ffffff !important;
-        color:black !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <style>
-    .stApp {
-        background-color:#0f1720 !important;
-        color:#e6eef8 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# Update tema berdasarkan toggle
+st.session_state.theme = "light" if state_toggle else "dark"
 
 # Terapkan CSS tema
 if st.session_state.theme == "light":
