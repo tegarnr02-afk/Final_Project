@@ -145,6 +145,22 @@ toggle_html = f"""
 
 st.markdown(toggle_html, unsafe_allow_html=True)
 
+new_theme = streamlit_js_eval(
+    js_code="""
+    (function(){
+        const el = document.getElementById('themeSwitch');
+        if (!el) return null;
+        return el.checked ? "light" : "dark";
+    })();
+    """,
+    key="theme_reader"
+)
+
+if new_theme in ["light", "dark"] and new_theme != st.session_state.theme:
+    st.session_state.theme = new_theme
+    st.rerun()
+
+
 LIGHT_THEME = """
 <style>
 .stApp { background-color: #ffffff !important; color: #000000 !important; }
