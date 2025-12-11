@@ -9,6 +9,8 @@ import streamlit.components.v1 as components
 from wordcloud import WordCloud
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
+from streamlit_javascript import st_javascript as streamlit_js_eval
+
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
