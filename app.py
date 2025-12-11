@@ -91,20 +91,20 @@ height=120)
 
 current_toggle = streamlit_js_eval(
     js_code="""
-    window.parent.window.addEventListener('message', (e)=>{
+    window.addEventListener('message', (e)=>{
         if (e.data && e.data.themeToggle){
-            window.parent.window.themeFromJS = e.data.themeToggle;
+            window.themeFromJS = e.data.themeToggle;
         }
-        return window.parent.window.themeFromJS;
     });
     """,
     key="listener"
 )
 
 theme_value = streamlit_js_eval(
-    js_code="window.parent.window.themeFromJS ?? null",
+    js_code="window.themeFromJS ?? null",
     key="pull_theme"
 )
+s
 
 
 st.write("Theme now:", st.session_state.theme)
@@ -115,10 +115,6 @@ if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
 
 # ===========================
 # THEME OVERRIDE FIXED
-# ===========================
-
-# ===========================
-# THEME OVERRIDE FIXED (FINAL)
 # ===========================
 
 if st.session_state.theme == "light":
