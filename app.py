@@ -14,205 +14,210 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 
 # ============================
-# BEAUTIFUL THEME TOGGLE (Fully Functional)
+# BEAUTIFUL THEME TOGGLE (Working Version)
 # ============================
 # Init theme
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Track last known theme from URL
-if "last_url_theme" not in st.session_state:
-    st.session_state.last_url_theme = st.session_state.theme
+# Create container for toggle at the top
+toggle_container = st.container()
 
-# Check URL for theme changes FIRST
-try:
-    params = st.query_params
-    if "t" in params:  # theme toggle parameter
-        url_theme = params.get("t")
-        if url_theme in ["light", "dark"] and url_theme != st.session_state.theme:
-            st.session_state.theme = url_theme
-            st.session_state.last_url_theme = url_theme
-            st.rerun()
-except:
-    pass
+with toggle_container:
+    # Beautiful toggle HTML
+    toggle_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+    body {{
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }}
 
-checked = "checked" if st.session_state.theme == "light" else ""
+    .theme-toggle-container {{
+        display: flex;
+        justify-content: flex-end;
+        padding: 15px 15px 5px 15px;
+        background: transparent;
+    }}
 
-toggle_html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-body {{
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}}
+    .toggle-wrapper {{
+        position: relative;
+        width: 320px;
+        height: 65px;
+        background: linear-gradient(90deg, #ff6b9d 0%, #ffa06b 50%, #ffd93d 100%);
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        overflow: hidden;
+        user-select: none;
+    }}
 
-.theme-toggle-container {{
-    display: flex;
-    justify-content: flex-end;
-    padding: 15px 15px 5px 15px;
-    background: transparent;
-}}
+    .toggle-wrapper.night-mode {{
+        background: linear-gradient(90deg, #2a5298 0%, #1e3c72 50%, #4facfe 100%);
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }}
 
-.toggle-wrapper {{
-    position: relative;
-    width: 320px;
-    height: 65px;
-    background: linear-gradient(90deg, #ff6b9d 0%, #ffa06b 50%, #ffd93d 100%);
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    overflow: hidden;
-    user-select: none;
-}}
+    .toggle-slider {{
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        width: 145px;
+        height: 55px;
+        background: white;
+        border-radius: 50px;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 13px;
+        color: #ff6b9d;
+        letter-spacing: 0.5px;
+        z-index: 2;
+    }}
 
-.toggle-wrapper.night-mode {{
-    background: linear-gradient(90deg, #2a5298 0%, #1e3c72 50%, #4facfe 100%);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
-}}
+    .toggle-wrapper.night-mode .toggle-slider {{
+        left: 170px;
+        color: #2a5298;
+    }}
 
-.toggle-slider {{
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 145px;
-    height: 55px;
-    background: white;
-    border-radius: 50px;
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 13px;
-    color: #ff6b9d;
-    letter-spacing: 0.5px;
-    z-index: 2;
-}}
+    .toggle-option {{
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        color: white;
+        transition: all 0.3s ease;
+        z-index: 1;
+        pointer-events: none;
+    }}
 
-.toggle-wrapper.night-mode .toggle-slider {{
-    left: 170px;
-    color: #2a5298;
-}}
+    .toggle-option-left {{
+        left: 25px;
+    }}
 
-.toggle-option {{
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    color: white;
-    transition: all 0.3s ease;
-    z-index: 1;
-    pointer-events: none;
-}}
+    .toggle-option-right {{
+        right: 25px;
+    }}
 
-.toggle-option-left {{
-    left: 25px;
-}}
+    .toggle-wrapper.night-mode .toggle-option-left {{
+        opacity: 0.6;
+    }}
 
-.toggle-option-right {{
-    right: 25px;
-}}
+    .toggle-wrapper:not(.night-mode) .toggle-option-right {{
+        opacity: 0.6;
+    }}
 
-.toggle-wrapper.night-mode .toggle-option-left {{
-    opacity: 0.6;
-}}
+    .toggle-icon {{
+        font-size: 26px;
+        line-height: 1;
+    }}
 
-.toggle-wrapper:not(.night-mode) .toggle-option-right {{
-    opacity: 0.6;
-}}
+    .sun-icon {{
+        animation: rotate 20s linear infinite;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+    }}
 
-.toggle-icon {{
-    font-size: 26px;
-    line-height: 1;
-}}
+    .moon-icon {{
+        animation: pulse 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+    }}
 
-.sun-icon {{
-    animation: rotate 20s linear infinite;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-}}
+    @keyframes rotate {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
 
-.moon-icon {{
-    animation: pulse 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-}}
+    @keyframes pulse {{
+        0%, 100% {{ opacity: 1; }}
+        50% {{ opacity: 0.7; }}
+    }}
 
-@keyframes rotate {{
-    from {{ transform: rotate(0deg); }}
-    to {{ transform: rotate(360deg); }}
-}}
+    .toggle-wrapper:hover {{
+        transform: scale(1.03);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    }}
 
-@keyframes pulse {{
-    0%, 100% {{ opacity: 1; }}
-    50% {{ opacity: 0.7; }}
-}}
-
-.toggle-wrapper:hover {{
-    transform: scale(1.03);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-}}
-
-.toggle-wrapper:active {{
-    transform: scale(0.98);
-}}
-</style>
-</head>
-<body>
-<div class="theme-toggle-container">
-    <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper" onclick="toggleTheme()">
-        <div class="toggle-slider" id="toggleSlider">
-            <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
-        </div>
-        <div class="toggle-option toggle-option-left">
-            <span class="toggle-icon sun-icon">☀️</span>
-            <span>DAY MODE</span>
-        </div>
-        <div class="toggle-option toggle-option-right">
-            <span class="toggle-icon moon-icon">🌙</span>
-            <span>NIGHT MODE</span>
+    .toggle-wrapper:active {{
+        transform: scale(0.98);
+    }}
+    </style>
+    </head>
+    <body>
+    <div class="theme-toggle-container">
+        <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper" onclick="toggleTheme()">
+            <div class="toggle-slider" id="toggleSlider">
+                <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
+            </div>
+            <div class="toggle-option toggle-option-left">
+                <span class="toggle-icon sun-icon">☀️</span>
+                <span>DAY MODE</span>
+            </div>
+            <div class="toggle-option toggle-option-right">
+                <span class="toggle-icon moon-icon">🌙</span>
+                <span>NIGHT MODE</span>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-let currentTheme = "{'dark' if st.session_state.theme == 'dark' else 'light'}";
+    <script>
+    let currentTheme = "{'dark' if st.session_state.theme == 'dark' else 'light'}";
 
-function toggleTheme() {{
-    const wrapper = document.getElementById('toggleWrapper');
-    const sliderText = document.getElementById('sliderText');
-    
-    // Toggle visually
-    if (currentTheme === 'dark') {{
-        wrapper.classList.remove('night-mode');
-        sliderText.textContent = 'DAY MODE';
-        currentTheme = 'light';
-    }} else {{
-        wrapper.classList.add('night-mode');
-        sliderText.textContent = 'NIGHT MODE';
-        currentTheme = 'dark';
+    function toggleTheme() {{
+        const wrapper = document.getElementById('toggleWrapper');
+        const sliderText = document.getElementById('sliderText');
+        
+        // Toggle visually
+        if (currentTheme === 'dark') {{
+            wrapper.classList.remove('night-mode');
+            sliderText.textContent = 'DAY MODE';
+            currentTheme = 'light';
+        }} else {{
+            wrapper.classList.add('night-mode');
+            sliderText.textContent = 'NIGHT MODE';
+            currentTheme = 'dark';
+        }}
+        
+        // Try to find and click Streamlit button by iterating through all buttons
+        setTimeout(() => {{
+            try {{
+                const allButtons = window.parent.document.querySelectorAll('button');
+                for (let btn of allButtons) {{
+                    const btnText = btn.innerText || btn.textContent || '';
+                    if (btnText.includes('_theme_btn_') || btn.getAttribute('data-testid') === 'theme-toggle-btn') {{
+                        btn.click();
+                        return;
+                    }}
+                }}
+            }} catch(e) {{
+                console.error('Could not find button:', e);
+            }}
+        }}, 50);
     }}
-    
-    // Update URL and force page reload
-    const url = new URL(window.parent.location.href);
-    url.searchParams.set('t', currentTheme);
-    url.searchParams.set('_', Date.now()); // Cache buster
-    window.parent.location.href = url.toString();
-}}
-</script>
-</body>
-</html>
-"""
+    </script>
+    </body>
+    </html>
+    """
 
-# Display the toggle
-components.html(toggle_html, height=100, scrolling=False)
+    # Display toggle
+    components.html(toggle_html, height=100, scrolling=False)
+
+# Visible button for testing (we'll hide it after it works)
+st.write("**Debug: Klik tombol di bawah untuk test**")
+if st.button("🔄 Toggle Theme (Test Button)", key="_theme_btn_test"):
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+    st.rerun()
+
+st.write(f"Current theme: {st.session_state.theme}")
 
 # ===========================
 # THEME STYLES
