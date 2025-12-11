@@ -94,28 +94,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-
-
-# Terapkan CSS tema
-if st.session_state.theme == "light":
-    st.markdown("""
-    <style>
-    .stApp { background-color: #ffffff !important; color: #000000 !important; }
-    textarea, input, .stTextArea textarea {
-        background:#f3f3f3 !important; color:#000000 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <style>
-    .stApp { background-color: #0f1720 !important; color: #e6eef8 !important; }
-    textarea, input, .stTextArea textarea {
-        background:#11131a !important; color:#e6eef8 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
 # Sync theme via URL parameter (safe check)
 params = st.experimental_get_query_params()
 
