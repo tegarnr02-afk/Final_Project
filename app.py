@@ -16,28 +16,26 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 # ============================
 # BEAUTIFUL THEME TOGGLE (Fully Functional)
 # ============================
-# Init theme - CHECK QUERY PARAMS FIRST
+# Init theme
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Check for theme change from query params BEFORE rendering anything
+# Track last known theme from URL
+if "last_url_theme" not in st.session_state:
+    st.session_state.last_url_theme = st.session_state.theme
+
+# Check URL for theme changes FIRST
 try:
     params = st.query_params
-    if "theme" in params:
-        new_theme = params["theme"]
-        if new_theme in ["light", "dark"]:
-            if new_theme != st.session_state.theme:
-                st.session_state.theme = new_theme
-                st.rerun()
-except Exception as e:
+    if "t" in params:  # theme toggle parameter
+        url_theme = params.get("t")
+        if url_theme in ["light", "dark"] and url_theme != st.session_state.theme:
+            st.session_state.theme = url_theme
+            st.session_state.last_url_theme = url_theme
+            st.rerun()
+except:
     pass
 
-# Generate unique key for this session
-import random
-if "session_key" not in st.session_state:
-    st.session_state.session_key = random.randint(1000, 9999)
-
-# Beautiful toggle switch HTML with iframe communication
 checked = "checked" if st.session_state.theme == "light" else ""
 
 toggle_html = f"""
@@ -191,7 +189,7 @@ function toggleTheme() {{
     const wrapper = document.getElementById('toggleWrapper');
     const sliderText = document.getElementById('sliderText');
     
-    // Toggle the theme
+    // Toggle visually
     if (currentTheme === 'dark') {{
         wrapper.classList.remove('night-mode');
         sliderText.textContent = 'DAY MODE';
@@ -202,11 +200,10 @@ function toggleTheme() {{
         currentTheme = 'dark';
     }}
     
-    // Update URL with new theme
-    const currentUrl = window.parent.location.href;
-    const url = new URL(currentUrl);
-    url.searchParams.set('theme', currentTheme);
-    url.searchParams.set('t', Date.now()); // Force reload
+    // Update URL and force page reload
+    const url = new URL(window.parent.location.href);
+    url.searchParams.set('t', currentTheme);
+    url.searchParams.set('_', Date.now()); // Cache buster
     window.parent.location.href = url.toString();
 }}
 </script>
@@ -214,7 +211,7 @@ function toggleTheme() {{
 </html>
 """
 
-# Display the beautiful toggle
+# Display the toggle
 components.html(toggle_html, height=100, scrolling=False)
 
 # ===========================
