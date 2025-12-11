@@ -367,7 +367,7 @@ with col2:
                     <span id="sliderText">{'NIGHT' if st.session_state.theme == 'dark' else 'DAY'}</span>
                 </div>
                 <div class="toggle-option toggle-option-left">
-                    <span class="toggle-icon sun-icon">☀️</span>
+                    <span class="toggle-icon sun-icon">☀</span>
                     <span>DAY</span>
                 </div>
                 <div class="toggle-option toggle-option-right">
@@ -427,61 +427,7 @@ with col2:
 st.markdown("---")
 
 # Sidebar: Model upload
-
-with st.sidebar:
-    toggle_html_sidebar = f"""
-    <div class="theme-toggle-container">
-        <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}"
-             id="toggleWrapper" onclick="toggleTheme()">
-            <div class="toggle-slider" id="toggleSlider">
-                <span id="sliderText">{'NIGHT' if st.session_state.theme == 'dark' else 'DAY'}</span>
-            </div>
-            <div class="toggle-option toggle-option-left">
-                <span class="toggle-icon">☀️</span><span>DAY</span>
-            </div>
-            <div class="toggle-option toggle-option-right">
-                <span class="toggle-icon">🌙</span><span>NIGHT</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    function toggleTheme() {
-        const wrapper = document.getElementById('toggleWrapper');
-        const sliderText = document.getElementById('sliderText');
-
-        if (wrapper.classList.contains('night-mode')) {
-            wrapper.classList.remove('night-mode');
-            sliderText.textContent = 'DAY';
-        } else {
-            wrapper.classList.add('night-mode');
-            sliderText.textContent = 'NIGHT';
-        }
-
-        setTimeout(() => {
-            try {
-                const doc = window.parent.document;
-                let btn = doc.querySelector('button[title="Toggle Theme"]');
-                if (!btn) {
-                    for (let b of doc.querySelectorAll('button')) {
-                        if ((b.innerText || '').includes('🌓')) { btn = b; break; }
-                    }
-                }
-                if (btn) btn.click();
-            } catch(e) { console.error(e); }
-        }, 50);
-    }
-    </script>
-    """
-
-    components.html(toggle_html_sidebar, height=60, scrolling=False)
-
-    if st.button("🌓", key="hidden_theme_toggle"):
-        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-        st.rerun()
-
 with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
-    
     st.write("Model & TF-IDF harus tersedia:")
     uploaded_model = st.file_uploader("Upload model.pkl", type=["pkl","pickle"], key="m1")
     uploaded_tfidf = st.file_uploader("Upload tfidf.pkl", type=["pkl","pickle"], key="v1")
@@ -514,9 +460,12 @@ if uploaded_tfidf is not None:
         st.sidebar.error(f"❌ Gagal load tfidf: {e}")
 
 if model is None or tfidf is None:
-    st.warning("⚠️ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
+    st.warning("⚠ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
     st.info("💡 Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl.")
 
+if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+    st.rerun()
 # ===========================
 # SINGLE PREDICTION
 # ===========================
@@ -536,7 +485,7 @@ with colA:
     )
 
 with colB:
-    st.write("**Aksi:**")
+    st.write("*Aksi:*")
 
     def reset_input():
         st.session_state["review_box"] = ""
@@ -592,8 +541,8 @@ if st.button("🔍 Prediksi Sentimen", use_container_width=True):
                 pred = preds[0]
                 proba_map = {classes[i]: float(probs[0,i]) for i in range(len(classes))}
                 
-                st.success(f"**Prediksi Sentimen:** {pred.upper()}")
-                st.markdown("**Confidence:**")
+                st.success(f"*Prediksi Sentimen:* {pred.upper()}")
+                st.markdown("*Confidence:*")
                 dfc = pd.DataFrame.from_dict(proba_map, orient="index", columns=["probability"]).sort_values("probability", ascending=False)
                 st.table((dfc*100).round(2))
                 st.bar_chart(dfc["probability"])
@@ -612,14 +561,14 @@ uploaded_csv = st.file_uploader("Upload CSV untuk batch prediksi", type=["csv"])
 if uploaded_csv is not None:
     try:
         df_upload = pd.read_csv(uploaded_csv)
-        st.write("**Preview data:**")
+        st.write("*Preview data:*")
         st.dataframe(df_upload.head())
         
         col_options = list(df_upload.columns)
         chosen_col = st.selectbox("Pilih kolom yang berisi review", col_options)
         n_preview = st.number_input("Jumlah baris preview", min_value=1, max_value=500, value=10)
         
-        if st.button("▶️ Jalankan prediksi batch"):
+        if st.button("▶ Jalankan prediksi batch"):
             if model is None or tfidf is None:
                 st.error("❌ Model / TF-IDF belum tersedia.")
             else:
@@ -641,7 +590,7 @@ if uploaded_csv is not None:
                 st.dataframe(out.head(n_preview))
                 
                 csv_bytes = out.to_csv(index=False).encode("utf-8")
-                st.download_button("⬇️ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
+                st.download_button("⬇ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
     except Exception as e:
         st.error(f"❌ Gagal membaca CSV: {e}")
 
@@ -656,7 +605,7 @@ with st.expander("Upload sample CSV untuk EDA"):
     if sample_file is not None:
         try:
             df_s = pd.read_csv(sample_file)
-            st.write("**Preview:**")
+            st.write("*Preview:*")
             st.dataframe(df_s.head())
             
             possible = [c for c in df_s.columns if any(k in c.lower() for k in ["review","text","comment"])]
@@ -671,7 +620,7 @@ with st.expander("Upload sample CSV untuk EDA"):
                 X_vec = tfidf.transform(cleaned_texts)
                 probs, preds, classes = get_proba_and_pred(model, X_vec)
                 df_s["pred_sentiment"] = preds
-                st.write("**Distribusi prediksi:**")
+                st.write("*Distribusi prediksi:*")
                 st.bar_chart(df_s["pred_sentiment"].value_counts())
                 
             text_all = " ".join(df_s[chosen].fillna("").astype(str).tolist())
