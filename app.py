@@ -19,13 +19,24 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # Hidden button for theme toggle - completely hidden with CSS
+# Hidden button placed at the very bottom with aggressive hiding
 st.markdown("""
 <style>
-button[kind="secondary"][title="Toggle Theme"] {
+/* Aggressively hide the hidden toggle button */
+div[data-testid="stVerticalBlock"]:has(button[title="Toggle Theme"]) {
+    display: none !important;
+}
+button[title="Toggle Theme"] {
     display: none !important;
     visibility: hidden !important;
     position: absolute !important;
-    left: -9999px !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0px !important;
+    height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
 }
 </style>
 """, unsafe_allow_html=True)
