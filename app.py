@@ -90,14 +90,18 @@ document.getElementById("themeSwitch").addEventListener("change", function() {{
 height=120)
 
 current_toggle = streamlit_js_eval(
-    js_code="window.addEventListener('message', (e)=>{window.themeFromJS=e.data.themeToggle})",
+    js_code="window.addEventListener('message', (e)=>{ window.themeFromJS = e.data.themeToggle; return window.themeFromJS; })",
     key="listener"
 )
 
+
 theme_value = streamlit_js_eval(
-    js_code="window.themeFromJS",
+    js_code="window.themeFromJS ?? null",
     key="pull_theme"
 )
+
+st.write("Theme now:", st.session_state.theme)
+
 
 if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
     st.session_state.theme = theme_value
