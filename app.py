@@ -16,17 +16,21 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 # ============================
 # BEAUTIFUL THEME TOGGLE (Fully Functional)
 # ============================
-# Init theme
+# Init theme - CHECK QUERY PARAMS FIRST
 if "theme" not in st.session_state:
-    # Check if theme is in query params
-    try:
-        params = st.query_params
-        if "theme" in params:
-            st.session_state.theme = params["theme"]
-        else:
-            st.session_state.theme = "dark"
-    except:
-        st.session_state.theme = "dark"
+    st.session_state.theme = "dark"
+
+# Check for theme change from query params BEFORE rendering anything
+try:
+    params = st.query_params
+    if "theme" in params:
+        new_theme = params["theme"]
+        if new_theme in ["light", "dark"]:
+            if new_theme != st.session_state.theme:
+                st.session_state.theme = new_theme
+                st.rerun()
+except Exception as e:
+    pass
 
 # Generate unique key for this session
 import random
@@ -212,15 +216,6 @@ function toggleTheme() {{
 
 # Display the beautiful toggle
 components.html(toggle_html, height=100, scrolling=False)
-
-# Check for theme change from query params
-try:
-    params = st.query_params
-    if "theme" in params and params["theme"] != st.session_state.theme:
-        st.session_state.theme = params["theme"]
-        st.rerun()
-except:
-    pass
 
 # ===========================
 # THEME STYLES
