@@ -19,7 +19,7 @@ if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
 # Hidden button for theme toggle (moved to bottom, invisible)
-
+if st.button("", key="hidden_theme_toggle", help="Toggle Theme"):
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
     st.rerun()
 
