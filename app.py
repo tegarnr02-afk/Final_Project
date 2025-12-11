@@ -135,6 +135,75 @@ if st.session_state.theme == "dark":
 else:
     st.markdown(LIGHT_THEME, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+/* Background dasar */
+[data-testid="stAppViewContainer"] {
+    background-color: #ffffff !important;
+    color: #000 !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #f0f0f0 !important;
+    color: #000 !important;
+}
+
+/* Card / Box */
+.block-container {
+    background-color: #ffffff !important;
+}
+
+/* Buttons */
+.stButton>button {
+    background-color: #ffcc33 !important;
+    color: black !important;
+    border-radius: 8px !important;
+}
+
+/* Dataframe / Table */
+.dataframe, .stDataFrame {
+    background-color: #fff !important;
+    color: #000 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+/* Background dasar */
+[data-testid="stAppViewContainer"] {
+    background-color: #0f1720 !important;
+    color: #e6eef8 !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #11131a !important;
+    color: #e6eef8 !important;
+}
+
+/* Card / Box */
+.block-container {
+    background-color: #0f1720 !important;
+}
+
+/* Buttons */
+.stButton>button {
+    background-color: #3a3a3a !important;
+    color: white !important;
+    border-radius: 8px !important;
+}
+
+/* Dataframe / Table */
+.dataframe, .stDataFrame {
+    background-color: #11131a !important;
+    color: #e6eef8 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 
 # --- Helper: stopwords fallback ---
 try:
