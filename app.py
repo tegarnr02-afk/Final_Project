@@ -126,10 +126,6 @@ if current_toggle in ["light", "dark"] and current_toggle != st.session_state.th
     st.session_state.theme = current_toggle
 
 
-if new_theme in ["light", "dark"] and new_theme != st.session_state.theme:
-    st.session_state.theme = new_theme
-    st.rerun()
-
 
 LIGHT_THEME = """
 <style>
