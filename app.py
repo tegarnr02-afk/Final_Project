@@ -18,206 +18,10 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Hidden button for theme toggle
-col1, col2, col3 = st.columns([4, 1, 4])
-with col2:
-    if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme", use_container_width=True):
-        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-        st.rerun()
-
-# Beautiful toggle HTML
-toggle_html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-body {{
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}}
-
-.theme-toggle-container {{
-    display: flex;
-    justify-content: flex-end;
-    padding: 15px 15px 5px 15px;
-    background: transparent;
-}}
-
-.toggle-wrapper {{
-    position: relative;
-    width: 320px;
-    height: 65px;
-    background: linear-gradient(90deg, #ff6b9d 0%, #ffa06b 50%, #ffd93d 100%);
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    overflow: hidden;
-    user-select: none;
-}}
-
-.toggle-wrapper.night-mode {{
-    background: linear-gradient(90deg, #2a5298 0%, #1e3c72 50%, #4facfe 100%);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
-}}
-
-.toggle-slider {{
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 145px;
-    height: 55px;
-    background: white;
-    border-radius: 50px;
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 13px;
-    color: #ff6b9d;
-    letter-spacing: 0.5px;
-    z-index: 2;
-}}
-
-.toggle-wrapper.night-mode .toggle-slider {{
-    left: 170px;
-    color: #2a5298;
-}}
-
-.toggle-option {{
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    color: white;
-    transition: all 0.3s ease;
-    z-index: 1;
-    pointer-events: none;
-}}
-
-.toggle-option-left {{
-    left: 25px;
-}}
-
-.toggle-option-right {{
-    right: 25px;
-}}
-
-.toggle-wrapper.night-mode .toggle-option-left {{
-    opacity: 0.6;
-}}
-
-.toggle-wrapper:not(.night-mode) .toggle-option-right {{
-    opacity: 0.6;
-}}
-
-.toggle-icon {{
-    font-size: 26px;
-    line-height: 1;
-}}
-
-.sun-icon {{
-    animation: rotate 20s linear infinite;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-}}
-
-.moon-icon {{
-    animation: pulse 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-}}
-
-@keyframes rotate {{
-    from {{ transform: rotate(0deg); }}
-    to {{ transform: rotate(360deg); }}
-}}
-
-@keyframes pulse {{
-    0%, 100% {{ opacity: 1; }}
-    50% {{ opacity: 0.7; }}
-}}
-
-.toggle-wrapper:hover {{
-    transform: scale(1.03);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-}}
-
-.toggle-wrapper:active {{
-    transform: scale(0.98);
-}}
-</style>
-</head>
-<body>
-<div class="theme-toggle-container">
-    <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper" onclick="toggleTheme()">
-        <div class="toggle-slider" id="toggleSlider">
-            <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
-        </div>
-        <div class="toggle-option toggle-option-left">
-            <span class="toggle-icon sun-icon">☀</span>
-            <span>DAY MODE</span>
-        </div>
-        <div class="toggle-option toggle-option-right">
-            <span class="toggle-icon moon-icon">🌙</span>
-            <span>NIGHT MODE</span>
-        </div>
-    </div>
-</div>
-
-<script>
-function toggleTheme() {{
-    const wrapper = document.getElementById('toggleWrapper');
-    const sliderText = document.getElementById('sliderText');
-    
-    // Toggle visual immediately
-    if (wrapper.classList.contains('night-mode')) {{
-        wrapper.classList.remove('night-mode');
-        sliderText.textContent = 'DAY MODE';
-    }} else {{
-        wrapper.classList.add('night-mode');
-        sliderText.textContent = 'NIGHT MODE';
-    }}
-    
-    // Find and click Streamlit button
-    setTimeout(() => {{
-        try {{
-            const parentDoc = window.parent.document;
-            let themeButton = null;
-            
-            // Try multiple methods to find the button
-            themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
-            
-            if (!themeButton) {{
-                const allButtons = parentDoc.querySelectorAll('button');
-                for (let btn of allButtons) {{
-                    const btnText = btn.innerText || btn.textContent || '';
-                    if (btnText.includes('🌓')) {{
-                        themeButton = btn;
-                        break;
-                    }}
-                }}
-            }}
-            
-            if (themeButton) {{
-                themeButton.click();
-            }}
-        }} catch(e) {{
-            console.error('Error toggling theme:', e);
-        }}
-    }}, 50);
-}}
-</script>
-</body>
-</html>
-"""
-
-components.html(toggle_html, height=100, scrolling=False)
+# Hidden button for theme toggle (moved to bottom, invisible)
+if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+    st.rerun()
 
 # ===========================
 # THEME STYLES
@@ -423,13 +227,205 @@ def load_pickle(path_bytes):
 model = None
 tfidf = None
 
-col1, col2 = st.columns([2,1])
+col1, col2 = st.columns([3,1])
 with col1:
     st.markdown('<h1>🛒 Amazon Review Sentiment Analysis</h1>', unsafe_allow_html=True)
     st.markdown("Masukkan review atau upload CSV berisi kolom review untuk mendapatkan prediksi sentimen.")
 
 with col2:
-    st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=90)
+    # Logo dan toggle dalam satu kolom
+    subcol1, subcol2 = st.columns([1, 1])
+    with subcol1:
+        st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=70)
+    with subcol2:
+        # Compact toggle HTML
+        toggle_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }}
+        
+        .theme-toggle-container {{
+            display: flex;
+            justify-content: flex-start;
+            padding: 0;
+            background: transparent;
+        }}
+        
+        .toggle-wrapper {{
+            position: relative;
+            width: 140px;
+            height: 36px;
+            background: linear-gradient(90deg, #ff6b9d 0%, #ffa06b 50%, #ffd93d 100%);
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
+            user-select: none;
+        }}
+        
+        .toggle-wrapper.night-mode {{
+            background: linear-gradient(90deg, #2a5298 0%, #1e3c72 50%, #4facfe 100%);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }}
+        
+        .toggle-slider {{
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 62px;
+            height: 30px;
+            background: white;
+            border-radius: 25px;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 9px;
+            color: #ff6b9d;
+            letter-spacing: 0.3px;
+            z-index: 2;
+        }}
+        
+        .toggle-wrapper.night-mode .toggle-slider {{
+            left: 75px;
+            color: #2a5298;
+        }}
+        
+        .toggle-option {{
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            font-size: 9px;
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }}
+        
+        .toggle-option-left {{
+            left: 10px;
+        }}
+        
+        .toggle-option-right {{
+            right: 10px;
+        }}
+        
+        .toggle-wrapper.night-mode .toggle-option-left {{
+            opacity: 0.6;
+        }}
+        
+        .toggle-wrapper:not(.night-mode) .toggle-option-right {{
+            opacity: 0.6;
+        }}
+        
+        .toggle-icon {{
+            font-size: 14px;
+            line-height: 1;
+        }}
+        
+        .sun-icon {{
+            animation: rotate 20s linear infinite;
+        }}
+        
+        .moon-icon {{
+            animation: pulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes rotate {{
+            from {{ transform: rotate(0deg); }}
+            to {{ transform: rotate(360deg); }}
+        }}
+        
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.7; }}
+        }}
+        
+        .toggle-wrapper:hover {{
+            transform: scale(1.05);
+        }}
+        
+        .toggle-wrapper:active {{
+            transform: scale(0.95);
+        }}
+        </style>
+        </head>
+        <body>
+        <div class="theme-toggle-container">
+            <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper" onclick="toggleTheme()">
+                <div class="toggle-slider" id="toggleSlider">
+                    <span id="sliderText">{'NIGHT' if st.session_state.theme == 'dark' else 'DAY'}</span>
+                </div>
+                <div class="toggle-option toggle-option-left">
+                    <span class="toggle-icon sun-icon">☀️</span>
+                    <span>DAY</span>
+                </div>
+                <div class="toggle-option toggle-option-right">
+                    <span class="toggle-icon moon-icon">🌙</span>
+                    <span>NIGHT</span>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        function toggleTheme() {{
+            const wrapper = document.getElementById('toggleWrapper');
+            const sliderText = document.getElementById('sliderText');
+            
+            // Toggle visual immediately
+            if (wrapper.classList.contains('night-mode')) {{
+                wrapper.classList.remove('night-mode');
+                sliderText.textContent = 'DAY';
+            }} else {{
+                wrapper.classList.add('night-mode');
+                sliderText.textContent = 'NIGHT';
+            }}
+            
+            // Find and click Streamlit button
+            setTimeout(() => {{
+                try {{
+                    const parentDoc = window.parent.document;
+                    let themeButton = null;
+                    
+                    themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
+                    
+                    if (!themeButton) {{
+                        const allButtons = parentDoc.querySelectorAll('button');
+                        for (let btn of allButtons) {{
+                            const btnText = btn.innerText || btn.textContent || '';
+                            if (btnText.includes('🌓')) {{
+                                themeButton = btn;
+                                break;
+                            }}
+                        }}
+                    }}
+                    
+                    if (themeButton) {{
+                        themeButton.click();
+                    }}
+                }} catch(e) {{
+                    console.error('Error toggling theme:', e);
+                }}
+            }}, 50);
+        }}
+        </script>
+        </body>
+        </html>
+        """
+        components.html(toggle_html, height=50, scrolling=False)
 
 st.markdown("---")
 
@@ -467,7 +463,7 @@ if uploaded_tfidf is not None:
         st.sidebar.error(f"❌ Gagal load tfidf: {e}")
 
 if model is None or tfidf is None:
-    st.warning("⚠ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
+    st.warning("⚠️ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
     st.info("💡 Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl.")
 
 # ===========================
@@ -489,7 +485,7 @@ with colA:
     )
 
 with colB:
-    st.write("*Aksi:*")
+    st.write("**Aksi:**")
 
     def reset_input():
         st.session_state["review_box"] = ""
@@ -545,8 +541,8 @@ if st.button("🔍 Prediksi Sentimen", use_container_width=True):
                 pred = preds[0]
                 proba_map = {classes[i]: float(probs[0,i]) for i in range(len(classes))}
                 
-                st.success(f"*Prediksi Sentimen:* {pred.upper()}")
-                st.markdown("*Confidence:*")
+                st.success(f"**Prediksi Sentimen:** {pred.upper()}")
+                st.markdown("**Confidence:**")
                 dfc = pd.DataFrame.from_dict(proba_map, orient="index", columns=["probability"]).sort_values("probability", ascending=False)
                 st.table((dfc*100).round(2))
                 st.bar_chart(dfc["probability"])
@@ -565,14 +561,14 @@ uploaded_csv = st.file_uploader("Upload CSV untuk batch prediksi", type=["csv"])
 if uploaded_csv is not None:
     try:
         df_upload = pd.read_csv(uploaded_csv)
-        st.write("*Preview data:*")
+        st.write("**Preview data:**")
         st.dataframe(df_upload.head())
         
         col_options = list(df_upload.columns)
         chosen_col = st.selectbox("Pilih kolom yang berisi review", col_options)
         n_preview = st.number_input("Jumlah baris preview", min_value=1, max_value=500, value=10)
         
-        if st.button("▶ Jalankan prediksi batch"):
+        if st.button("▶️ Jalankan prediksi batch"):
             if model is None or tfidf is None:
                 st.error("❌ Model / TF-IDF belum tersedia.")
             else:
@@ -594,7 +590,7 @@ if uploaded_csv is not None:
                 st.dataframe(out.head(n_preview))
                 
                 csv_bytes = out.to_csv(index=False).encode("utf-8")
-                st.download_button("⬇ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
+                st.download_button("⬇️ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
     except Exception as e:
         st.error(f"❌ Gagal membaca CSV: {e}")
 
@@ -609,7 +605,7 @@ with st.expander("Upload sample CSV untuk EDA"):
     if sample_file is not None:
         try:
             df_s = pd.read_csv(sample_file)
-            st.write("*Preview:*")
+            st.write("**Preview:**")
             st.dataframe(df_s.head())
             
             possible = [c for c in df_s.columns if any(k in c.lower() for k in ["review","text","comment"])]
@@ -624,7 +620,7 @@ with st.expander("Upload sample CSV untuk EDA"):
                 X_vec = tfidf.transform(cleaned_texts)
                 probs, preds, classes = get_proba_and_pred(model, X_vec)
                 df_s["pred_sentiment"] = preds
-                st.write("*Distribusi prediksi:*")
+                st.write("**Distribusi prediksi:**")
                 st.bar_chart(df_s["pred_sentiment"].value_counts())
                 
             text_all = " ".join(df_s[chosen].fillna("").astype(str).tolist())
