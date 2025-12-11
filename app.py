@@ -428,7 +428,7 @@ st.markdown("---")
 
 # Sidebar: Model upload
 
-with st.sidebar.# Hidden button for theme toggle (moved to bottom, invisible)
+with st.sidebar.
 if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
     st.rerun()
