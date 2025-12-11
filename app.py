@@ -104,7 +104,7 @@ theme_value = streamlit_js_eval(
     js_code="window.themeFromJS ?? null",
     key="pull_theme"
 )
-s
+
 
 
 st.write("Theme now:", st.session_state.theme)
