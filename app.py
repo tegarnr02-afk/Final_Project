@@ -94,14 +94,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# Sync theme via URL parameter (safe check)
-params = st.experimental_get_query_params()
-
-if "theme" in params:
-    st.session_state.theme = params["theme"][0]
-    st.experimental_set_query_params()  # clear params
-
-
 new_theme = streamlit_js_eval(
     js_code="""
     (function(){
