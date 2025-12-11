@@ -430,7 +430,7 @@ with st.sidebar:
     st.markdown("### 🎨 Theme")
     
     # Tombol toggle tema (di atas Model/Vectorizer)
-    if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+    if st.button("🌓Dark/Light", key="hidden_theme_toggle", help="Toggle Theme"):
         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
 
