@@ -4,11 +4,12 @@ import numpy as np
 import pickle
 import re
 import io
+import time
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 from wordcloud import WordCloud
+from streamlit_js_eval import streamlit_js_eval
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.utils.extmath import softmax as sk_softmax
 
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
