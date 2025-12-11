@@ -41,9 +41,7 @@ button[title="Toggle Theme"] {
 </style>
 """, unsafe_allow_html=True)
 
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+
 
 # ===========================
 # THEME STYLES
