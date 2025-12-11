@@ -106,55 +106,94 @@ if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
 # THEME OVERRIDE FIXED
 # ===========================
 
+# ===========================
+# THEME OVERRIDE FIXED (FINAL)
+# ===========================
+
 if st.session_state.theme == "light":
     st.markdown("""
     <style>
-    /* Background dasar */
+
+    /* MAIN BACKGROUND */
     [data-testid="stAppViewContainer"] {
         background-color: #ffffff !important;
-        color: #000 !important;
+        color: #000000 !important;
     }
+
+    /* SIDEBAR */
     [data-testid="stSidebar"] {
-        background-color: #f0f0f0 !important;
-        color: #000 !important;
+        background-color: #f2f2f2 !important;
+        color: #000000 !important;
     }
+    [data-testid="stSidebarNav"] {
+        background-color: #f2f2f2 !important;
+    }
+    [data-testid="stSidebarHeader"] {
+        background-color: #f2f2f2 !important;
+    }
+
+    /* MAIN BLOCK */
     .block-container {
         background-color: #ffffff !important;
+        color: #000000 !important;
     }
+
+    /* TABLES */
+    .dataframe, .stDataFrame {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* BUTTON */
     .stButton>button {
         background-color: #ffcc33 !important;
         color: black !important;
+        border-radius: 6px !important;
     }
-    .dataframe, .stDataFrame {
-        background-color: #fff !important;
-        color: #000 !important;
-    }
+
     </style>
     """, unsafe_allow_html=True)
 
 else:
     st.markdown("""
     <style>
-    /* Background dasar */
+
+    /* MAIN BACKGROUND */
     [data-testid="stAppViewContainer"] {
         background-color: #0f1720 !important;
         color: #e6eef8 !important;
     }
+
+    /* SIDEBAR */
     [data-testid="stSidebar"] {
         background-color: #11131a !important;
         color: #e6eef8 !important;
     }
+    [data-testid="stSidebarNav"] {
+        background-color: #11131a !important;
+    }
+    [data-testid="stSidebarHeader"] {
+        background-color: #11131a !important;
+    }
+
+    /* MAIN BLOCK */
     .block-container {
         background-color: #0f1720 !important;
     }
-    .stButton>button {
-        background-color: #3a3a3a !important;
-        color: white !important;
-    }
+
+    /* TABLES */
     .dataframe, .stDataFrame {
         background-color: #11131a !important;
         color: #e6eef8 !important;
     }
+
+    /* BUTTON */
+    .stButton>button {
+        background-color: #3a3a3a !important;
+        color: white !important;
+        border-radius: 6px !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
