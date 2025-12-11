@@ -37,6 +37,9 @@ window.addEventListener("message", (event) => {
 """, height=0)
 
 
+if "_streamlit_event" not in st.session_state:
+    st.session_state["_streamlit_event"] = None
+
 event = st.session_state.get("_streamlit_event")
 
 if event == "toggleTheme":
