@@ -33,8 +33,7 @@ window.addEventListener("message", (event) => {
         );
     }
 });
-</script>
-""", height=0)
+</script>, height=0)
 
 # << TAMBAHKAN INI >>
 msg = st.experimental_get_query_params().get("streamlit_event", [None])[0]
