@@ -18,14 +18,11 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Hidden button for theme toggle
-col1, col2, col3 = st.columns([4, 1, 4])
-with col2:
-    if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme", use_container_width=True):
-        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-        st.rerun()
+# Check if theme should be toggled
+if "toggle_theme" not in st.session_state:
+    st.session_state.toggle_theme = False
 
-# Beautiful toggle HTML
+# Beautiful toggle HTML with working toggle
 toggle_html = f"""
 <!DOCTYPE html>
 <html>
@@ -160,7 +157,7 @@ body {{
             <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
         </div>
         <div class="toggle-option toggle-option-left">
-            <span class="toggle-icon sun-icon">☀</span>
+            <span class="toggle-icon sun-icon">☀️</span>
             <span>DAY MODE</span>
         </div>
         <div class="toggle-option toggle-option-right">
@@ -171,6 +168,8 @@ body {{
 </div>
 
 <script>
+let clickCount = 0;
+
 function toggleTheme() {{
     const wrapper = document.getElementById('toggleWrapper');
     const sliderText = document.getElementById('sliderText');
@@ -184,40 +183,32 @@ function toggleTheme() {{
         sliderText.textContent = 'NIGHT MODE';
     }}
     
-    // Find and click Streamlit button
-    setTimeout(() => {{
-        try {{
-            const parentDoc = window.parent.document;
-            let themeButton = null;
-            
-            // Try multiple methods to find the button
-            themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
-            
-            if (!themeButton) {{
-                const allButtons = parentDoc.querySelectorAll('button');
-                for (let btn of allButtons) {{
-                    const btnText = btn.innerText || btn.textContent || '';
-                    if (btnText.includes('🌓')) {{
-                        themeButton = btn;
-                        break;
-                    }}
-                }}
-            }}
-            
-            if (themeButton) {{
-                themeButton.click();
-            }}
-        }} catch(e) {{
-            console.error('Error toggling theme:', e);
-        }}
-    }}, 50);
+    // Increment click count and send to Streamlit
+    clickCount++;
+    
+    // Use Streamlit's setComponentValue to trigger rerun
+    window.parent.postMessage({{
+        type: 'streamlit:setComponentValue',
+        value: clickCount
+    }}, '*');
 }}
 </script>
 </body>
 </html>
 """
 
-components.html(toggle_html, height=100, scrolling=False)
+# Display toggle and capture clicks
+toggle_value = components.html(toggle_html, height=100, scrolling=False)
+
+# Toggle theme when component value changes
+if toggle_value is not None and toggle_value > 0:
+    if "last_toggle_value" not in st.session_state:
+        st.session_state.last_toggle_value = 0
+    
+    if toggle_value != st.session_state.last_toggle_value:
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+        st.session_state.last_toggle_value = toggle_value
+        st.rerun()
 
 # ===========================
 # THEME STYLES
@@ -467,7 +458,7 @@ if uploaded_tfidf is not None:
         st.sidebar.error(f"❌ Gagal load tfidf: {e}")
 
 if model is None or tfidf is None:
-    st.warning("⚠ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
+    st.warning("⚠️ Model atau TF-IDF belum tersedia. Unggah keduanya atau letakkan model.pkl & tfidf.pkl di folder aplikasi.")
     st.info("💡 Jika belum punya, jalankan training di Colab lalu unduh model.pkl dan tfidf.pkl.")
 
 # ===========================
@@ -489,7 +480,7 @@ with colA:
     )
 
 with colB:
-    st.write("*Aksi:*")
+    st.write("**Aksi:**")
 
     def reset_input():
         st.session_state["review_box"] = ""
@@ -545,8 +536,8 @@ if st.button("🔍 Prediksi Sentimen", use_container_width=True):
                 pred = preds[0]
                 proba_map = {classes[i]: float(probs[0,i]) for i in range(len(classes))}
                 
-                st.success(f"*Prediksi Sentimen:* {pred.upper()}")
-                st.markdown("*Confidence:*")
+                st.success(f"**Prediksi Sentimen:** {pred.upper()}")
+                st.markdown("**Confidence:**")
                 dfc = pd.DataFrame.from_dict(proba_map, orient="index", columns=["probability"]).sort_values("probability", ascending=False)
                 st.table((dfc*100).round(2))
                 st.bar_chart(dfc["probability"])
@@ -565,14 +556,14 @@ uploaded_csv = st.file_uploader("Upload CSV untuk batch prediksi", type=["csv"])
 if uploaded_csv is not None:
     try:
         df_upload = pd.read_csv(uploaded_csv)
-        st.write("*Preview data:*")
+        st.write("**Preview data:**")
         st.dataframe(df_upload.head())
         
         col_options = list(df_upload.columns)
         chosen_col = st.selectbox("Pilih kolom yang berisi review", col_options)
         n_preview = st.number_input("Jumlah baris preview", min_value=1, max_value=500, value=10)
         
-        if st.button("▶ Jalankan prediksi batch"):
+        if st.button("▶️ Jalankan prediksi batch"):
             if model is None or tfidf is None:
                 st.error("❌ Model / TF-IDF belum tersedia.")
             else:
@@ -594,7 +585,7 @@ if uploaded_csv is not None:
                 st.dataframe(out.head(n_preview))
                 
                 csv_bytes = out.to_csv(index=False).encode("utf-8")
-                st.download_button("⬇ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
+                st.download_button("⬇️ Download hasil (CSV)", csv_bytes, "prediksi_hasil.csv", "text/csv")
     except Exception as e:
         st.error(f"❌ Gagal membaca CSV: {e}")
 
@@ -609,7 +600,7 @@ with st.expander("Upload sample CSV untuk EDA"):
     if sample_file is not None:
         try:
             df_s = pd.read_csv(sample_file)
-            st.write("*Preview:*")
+            st.write("**Preview:**")
             st.dataframe(df_s.head())
             
             possible = [c for c in df_s.columns if any(k in c.lower() for k in ["review","text","comment"])]
@@ -624,7 +615,7 @@ with st.expander("Upload sample CSV untuk EDA"):
                 X_vec = tfidf.transform(cleaned_texts)
                 probs, preds, classes = get_proba_and_pred(model, X_vec)
                 df_s["pred_sentiment"] = preds
-                st.write("*Distribusi prediksi:*")
+                st.write("**Distribusi prediksi:**")
                 st.bar_chart(df_s["pred_sentiment"].value_counts())
                 
             text_all = " ".join(df_s[chosen].fillna("").astype(str).tolist())
