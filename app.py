@@ -93,17 +93,38 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# === EVENT LISTENER UNTUK MENDENGARKAN KLIK PADA TOGGLE ===
+st.markdown("""
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const toggle = document.getElementById("themeSwitch");
+    if (toggle) {
+        toggle.addEventListener("change", function() {
+            // Kirim nilai toggle ke window agar bisa dibaca Streamlit
+            window.streamlitToggle = toggle.checked ? "light" : "dark";
 
-new_theme = streamlit_js_eval(
-    js_code="""
-    (function(){
-        const el = document.getElementById('themeSwitch');
-        if (!el) return null;
-        return el.checked ? "light" : "dark";
-    })();
-    """,
-    key="theme_reader"
+            // Trigger Streamlit rerun
+            const buttons = window.parent.document.querySelectorAll('button[kind="secondary"]');
+            if (buttons.length > 0) {
+                buttons[0].click();
+            }
+        });
+    }
+});
+</script>
+""", unsafe_allow_html=True)
+
+
+
+# Membaca data dari toggle (window.streamlitToggle)
+current_toggle = streamlit_js_eval(
+    js_code="window.streamlitToggle ?? null",
+    key="read_toggle_state"
 )
+
+if current_toggle in ["light", "dark"] and current_toggle != st.session_state.theme:
+    st.session_state.theme = current_toggle
+
 
 if new_theme in ["light", "dark"] and new_theme != st.session_state.theme:
     st.session_state.theme = new_theme
