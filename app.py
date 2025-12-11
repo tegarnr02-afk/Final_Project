@@ -95,9 +95,6 @@ st.markdown("""
 # nilai True = Light, False = Dark
 light_mode = st.session_state.theme == "light"
 
-# toggle streamlit (tak terlihat, hanya backend)
-state_toggle = st.toggle("___", value=light_mode, label_visibility="collapsed")
-
 # Update tema berdasarkan toggle
 st.session_state.theme = "light" if state_toggle else "dark"
 
