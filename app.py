@@ -428,12 +428,11 @@ st.markdown("---")
 
 # Sidebar: Model upload
 
-
-with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
-# Hidden button for theme toggle (moved to bottom, invisible)
+with st.sidebar # Hidden button for theme toggle (moved to bottom, invisible)
 if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
     st.rerun()
+with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
     
     st.write("Model & TF-IDF harus tersedia:")
     uploaded_model = st.file_uploader("Upload model.pkl", type=["pkl","pickle"], key="m1")
