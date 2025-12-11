@@ -18,11 +18,14 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# Check if theme should be toggled
-if "toggle_theme" not in st.session_state:
-    st.session_state.toggle_theme = False
+# Hidden button for theme toggle
+col1, col2, col3 = st.columns([4, 1, 4])
+with col2:
+    if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme", use_container_width=True):
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+        st.rerun()
 
-# Beautiful toggle HTML with working toggle
+# Beautiful toggle HTML
 toggle_html = f"""
 <!DOCTYPE html>
 <html>
@@ -168,8 +171,6 @@ body {{
 </div>
 
 <script>
-let clickCount = 0;
-
 function toggleTheme() {{
     const wrapper = document.getElementById('toggleWrapper');
     const sliderText = document.getElementById('sliderText');
@@ -183,32 +184,40 @@ function toggleTheme() {{
         sliderText.textContent = 'NIGHT MODE';
     }}
     
-    // Increment click count and send to Streamlit
-    clickCount++;
-    
-    // Use Streamlit's setComponentValue to trigger rerun
-    window.parent.postMessage({{
-        type: 'streamlit:setComponentValue',
-        value: clickCount
-    }}, '*');
+    // Find and click Streamlit button
+    setTimeout(() => {{
+        try {{
+            const parentDoc = window.parent.document;
+            let themeButton = null;
+            
+            // Try multiple methods to find the button
+            themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
+            
+            if (!themeButton) {{
+                const allButtons = parentDoc.querySelectorAll('button');
+                for (let btn of allButtons) {{
+                    const btnText = btn.innerText || btn.textContent || '';
+                    if (btnText.includes('🌓')) {{
+                        themeButton = btn;
+                        break;
+                    }}
+                }}
+            }}
+            
+            if (themeButton) {{
+                themeButton.click();
+            }}
+        }} catch(e) {{
+            console.error('Error toggling theme:', e);
+        }}
+    }}, 50);
 }}
 </script>
 </body>
 </html>
 """
 
-# Display toggle and capture clicks
-toggle_value = components.html(toggle_html, height=100, scrolling=False)
-
-# Toggle theme when component value changes
-if toggle_value is not None and toggle_value > 0:
-    if "last_toggle_value" not in st.session_state:
-        st.session_state.last_toggle_value = 0
-    
-    if toggle_value != st.session_state.last_toggle_value:
-        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-        st.session_state.last_toggle_value = toggle_value
-        st.rerun()
+components.html(toggle_html, height=100, scrolling=False)
 
 # ===========================
 # THEME STYLES
