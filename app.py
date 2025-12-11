@@ -18,6 +18,31 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
+# Hidden button for theme toggle - completely hidden with CSS
+# Hidden button placed at the very bottom with aggressive hiding
+st.markdown("""
+<style>
+/* Aggressively hide the hidden toggle button */
+div[data-testid="stVerticalBlock"]:has(button[title="Toggle Theme"]) {
+    display: none !important;
+}
+button[title="Toggle Theme"] {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -99999px !important;
+    top: -99999px !important;
+    width: 0px !important;
+    height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+
 # ===========================
 # THEME STYLES
 # ===========================
@@ -81,7 +106,7 @@ if st.session_state.theme == "light":
         background-color: #f9f9f9 !important;
     }
     [data-testid="stFileUploader"] label {
-        color: #fafafa !important;
+        color: #000000 !important;
     }
     [data-testid="stMetricValue"] {
         color: #000000 !important;
@@ -233,7 +258,7 @@ with col2:
     with subcol1:
         st.image("https://www.freeiconspng.com/uploads/amazon-icon-6.png", width=70)
     with subcol2:
-        # Compact toggle HTML with embedded theme switching
+        # Compact toggle HTML
         toggle_html = f"""
         <!DOCTYPE html>
         <html>
@@ -384,23 +409,43 @@ with col2:
             if (wrapper.classList.contains('night-mode')) {{
                 wrapper.classList.remove('night-mode');
                 sliderText.textContent = 'DAY';
-                window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'light'}}, '*');
             }} else {{
                 wrapper.classList.add('night-mode');
                 sliderText.textContent = 'NIGHT';
-                window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'dark'}}, '*');
             }}
+            
+            // Find and click Streamlit button
+            setTimeout(() => {{
+                try {{
+                    const parentDoc = window.parent.document;
+                    let themeButton = null;
+                    
+                    themeButton = parentDoc.querySelector('button[title="Toggle Theme"]');
+                    
+                    if (!themeButton) {{
+                        const allButtons = parentDoc.querySelectorAll('button');
+                        for (let btn of allButtons) {{
+                            const btnText = btn.innerText || btn.textContent || '';
+                            if (btnText.includes('🌓')) {{
+                                themeButton = btn;
+                                break;
+                            }}
+                        }}
+                    }}
+                    
+                    if (themeButton) {{
+                        themeButton.click();
+                    }}
+                }} catch(e) {{
+                    console.error('Error toggling theme:', e);
+                }}
+            }}, 50);
         }}
         </script>
         </body>
         </html>
         """
-        theme_value = components.html(toggle_html, height=50, scrolling=False)
-        
-        # Update theme based on toggle
-        if theme_value and theme_value != st.session_state.theme:
-            st.session_state.theme = theme_value
-            st.rerun()
+        components.html(toggle_html, height=50, scrolling=False)
 
 st.markdown("---")
 
