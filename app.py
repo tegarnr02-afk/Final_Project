@@ -97,22 +97,18 @@ st.markdown(f"""
 
 st.markdown("""
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const toggle = document.getElementById("themeSwitch");
-    if (toggle) {
-        toggle.addEventListener("change", function() {
+const toggle = window.parent.document.getElementById("themeSwitch");
 
-            // Simpan status toggle
-            window.streamlitToggle = toggle.checked ? "light" : "dark";
-
-            // Tekan tombol hidden untuk rerun
-            const btn = window.parent.document.querySelector('button[kind="secondary"][disabled]');
-            if (btn) { btn.click(); }
-        });
-    }
-});
+if (toggle) {
+    toggle.onchange = () => {
+        window.streamlitToggle = toggle.checked ? "light" : "dark";
+        const btn = window.parent.document.querySelector('button[kind="secondary"][disabled]');
+        if (btn) btn.click();
+    };
+}
 </script>
 """, unsafe_allow_html=True)
+
 
 
 
