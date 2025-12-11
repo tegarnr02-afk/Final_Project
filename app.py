@@ -425,9 +425,17 @@ with col2:
         components.html(toggle_html, height=50, scrolling=False)
 
 st.markdown("---")
-if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
-    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
-    st.rerun()
+
+with st.sidebar:
+    st.markdown("### 🎨 Theme")
+    
+    # Tombol toggle tema (di atas Model/Vectorizer)
+    if st.button("🌓", key="hidden_theme_toggle", help="Toggle Theme"):
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+        st.rerun()
+
+    st.markdown("---")
+
 # Sidebar: Model upload
 with st.sidebar.expander("📦 Model / Vectorizer", expanded=True):
     st.write("Model & TF-IDF harus tersedia:")
