@@ -14,21 +14,43 @@ st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
 
 
 # ============================
-# BEAUTIFUL THEME TOGGLE (Like Image)
+# BEAUTIFUL THEME TOGGLE (Fully Functional)
 # ============================
 # Init theme
 if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+    # Check if theme is in query params
+    try:
+        params = st.query_params
+        if "theme" in params:
+            st.session_state.theme = params["theme"]
+        else:
+            st.session_state.theme = "dark"
+    except:
+        st.session_state.theme = "dark"
 
-# Beautiful toggle switch HTML
+# Generate unique key for this session
+import random
+if "session_key" not in st.session_state:
+    st.session_state.session_key = random.randint(1000, 9999)
+
+# Beautiful toggle switch HTML with iframe communication
 checked = "checked" if st.session_state.theme == "light" else ""
 
 toggle_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
 <style>
+body {{
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}}
+
 .theme-toggle-container {{
     display: flex;
     justify-content: flex-end;
-    padding: 20px 20px 10px 20px;
+    padding: 15px 15px 5px 15px;
     background: transparent;
 }}
 
@@ -42,6 +64,7 @@ toggle_html = f"""
     box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
     transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     overflow: hidden;
+    user-select: none;
 }}
 
 .toggle-wrapper.night-mode {{
@@ -138,40 +161,34 @@ toggle_html = f"""
 .toggle-wrapper:active {{
     transform: scale(0.98);
 }}
-
-/* Hide default checkbox */
-#themeCheckbox {{
-    display: none;
-}}
 </style>
-
+</head>
+<body>
 <div class="theme-toggle-container">
-    <input type="checkbox" id="themeCheckbox" {checked} onchange="toggleTheme(this)">
-    <label for="themeCheckbox">
-        <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper">
-            <div class="toggle-slider" id="toggleSlider">
-                <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
-            </div>
-            <div class="toggle-option toggle-option-left">
-                <span class="toggle-icon sun-icon">☀️</span>
-                <span>DAY MODE</span>
-            </div>
-            <div class="toggle-option toggle-option-right">
-                <span class="toggle-icon moon-icon">🌙</span>
-                <span>NIGHT MODE</span>
-            </div>
+    <div class="toggle-wrapper {'night-mode' if st.session_state.theme == 'dark' else ''}" id="toggleWrapper" onclick="toggleTheme()">
+        <div class="toggle-slider" id="toggleSlider">
+            <span id="sliderText">{'NIGHT MODE' if st.session_state.theme == 'dark' else 'DAY MODE'}</span>
         </div>
-    </label>
+        <div class="toggle-option toggle-option-left">
+            <span class="toggle-icon sun-icon">☀️</span>
+            <span>DAY MODE</span>
+        </div>
+        <div class="toggle-option toggle-option-right">
+            <span class="toggle-icon moon-icon">🌙</span>
+            <span>NIGHT MODE</span>
+        </div>
+    </div>
 </div>
 
 <script>
 let currentTheme = "{'dark' if st.session_state.theme == 'dark' else 'light'}";
 
-function toggleTheme(checkbox) {{
+function toggleTheme() {{
     const wrapper = document.getElementById('toggleWrapper');
     const sliderText = document.getElementById('sliderText');
     
-    if (checkbox.checked) {{
+    // Toggle the theme
+    if (currentTheme === 'dark') {{
         wrapper.classList.remove('night-mode');
         sliderText.textContent = 'DAY MODE';
         currentTheme = 'light';
@@ -181,62 +198,29 @@ function toggleTheme(checkbox) {{
         currentTheme = 'dark';
     }}
     
-    // Send message to parent window
-    window.parent.postMessage({{
-        type: 'streamlit:setComponentValue',
-        key: 'theme_toggle',
-        value: currentTheme
-    }}, '*');
-    
-    // Alternative: trigger hash change for Streamlit to detect
-    window.location.hash = 'theme_' + currentTheme + '_' + Date.now();
+    // Update URL with new theme
+    const currentUrl = window.parent.location.href;
+    const url = new URL(currentUrl);
+    url.searchParams.set('theme', currentTheme);
+    url.searchParams.set('t', Date.now()); // Force reload
+    window.parent.location.href = url.toString();
 }}
-
-// Listen for clicks on the wrapper too
-document.getElementById('toggleWrapper').addEventListener('click', function(e) {{
-    const checkbox = document.getElementById('themeCheckbox');
-    checkbox.checked = !checkbox.checked;
-    toggleTheme(checkbox);
-}});
 </script>
+</body>
+</html>
 """
 
 # Display the beautiful toggle
-components.html(toggle_html, height=100)
+components.html(toggle_html, height=100, scrolling=False)
 
-# Add a callback mechanism using query params
-import time
-if 'last_check' not in st.session_state:
-    st.session_state.last_check = time.time()
-
-# Simple polling mechanism - check every render
-current_time = time.time()
-if current_time - st.session_state.last_check > 0.5:  # Check every 0.5 seconds
-    # Try to get theme from URL hash (if set by JavaScript)
-    try:
-        from streamlit.runtime.scriptrunner import get_script_run_ctx
-        ctx = get_script_run_ctx()
-        if ctx:
-            st.session_state.last_check = current_time
-    except:
-        pass
-
-# Sidebar fallback buttons (hidden by default but work as backup)
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("**Atau gunakan tombol di bawah:**")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("☀️ Day", use_container_width=True, key="day_btn_backup"):
-            st.session_state.theme = "light"
-            st.rerun()
-    
-    with col2:
-        if st.button("🌙 Night", use_container_width=True, key="night_btn_backup"):
-            st.session_state.theme = "dark"
-            st.rerun()
+# Check for theme change from query params
+try:
+    params = st.query_params
+    if "theme" in params and params["theme"] != st.session_state.theme:
+        st.session_state.theme = params["theme"]
+        st.rerun()
+except:
+    pass
 
 # ===========================
 # THEME STYLES
