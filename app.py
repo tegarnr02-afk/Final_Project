@@ -5,23 +5,13 @@ import pickle
 import re
 import io
 import matplotlib.pyplot as plt
+import streamlit.components.v1 as components
 from wordcloud import WordCloud
 from streamlit_js_eval import streamlit_js_eval
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils.extmath import softmax as sk_softmax
 
 st.set_page_config(page_title="Amazon Review Sentiment", layout="wide")
-
-st.markdown("""
-<style>
-#rerun_hidden { 
-    visibility: hidden;
-    height: 0;
-}
-</style>
-""", unsafe_allow_html=True)
-
-rerun = st.button("rerun", key="rerun_hidden")
 
 
 # ============================
@@ -32,29 +22,21 @@ rerun = st.button("rerun", key="rerun_hidden")
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
 
-# =====================
-# CUSTOM BEAUTY TOGGLE
-# =====================
+checked = "checked" if st.session_state.theme == "light" else ""
 
-toggle_css = """
+components.html(f"""
 <style>
-.theme-toggle-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 0;
-}
-
-.switch {
+.switch {{
   position: relative;
   display: inline-block;
   width: 90px;
   height: 40px;
   cursor: pointer;
-}
+}}
 
-.switch input {display: none;}
+.switch input {{display: none;}}
 
-.slider {
+.slider {{
   position: absolute;
   top: 0;
   left: 0;
@@ -63,9 +45,9 @@ toggle_css = """
   background: linear-gradient(45deg, #1f1f1f, #3a3a3a);
   border-radius: 40px;
   transition: 0.4s ease-in-out;
-}
+}}
 
-.slider:before {
+.slider:before {{
   position: absolute;
   content: "🌙";
   height: 34px;
@@ -79,62 +61,54 @@ toggle_css = """
   display:flex;
   justify-content:center;
   align-items:center;
-}
+}}
 
-input:checked + .slider {
+input:checked + .slider {{
   background: linear-gradient(45deg, #ffb347, #ffcc33);
-}
+}}
 
-input:checked + .slider:before {
+input:checked + .slider:before {{
   transform: translateX(50px);
   content: "☀";
-}
+}}
 </style>
-"""
 
-st.markdown(toggle_css, unsafe_allow_html=True)
-
-checked = "checked" if st.session_state.theme == "light" else ""
-
-st.markdown(f"""
-<div class="theme-toggle-container">
+<div style="display:flex; justify-content:flex-end; padding:10px 0;">
     <label class="switch">
-      <input type="checkbox" id="themeSwitch" {checked}>
-      <span class="slider"></span>
+        <input type="checkbox" id="themeSwitch" {checked}>
+        <span class="slider"></span>
     </label>
 </div>
-""", unsafe_allow_html=True)
 
-st.markdown("""
 <script>
-const toggle = document.getElementById("themeSwitch");
-
-if (toggle) {
-    toggle.onchange = () => {
-        window.streamlitToggle = toggle.checked ? "light" : "dark";
-
-        // Trigger Python rerun
-        const rerunBtn = document.querySelector('#rerun_hidden');
-        if (rerunBtn) rerunBtn.click();
-    };
-}
+document.getElementById("themeSwitch").addEventListener("change", function() {{
+    const theme = this.checked ? "light" : "dark";
+    window.parent.postMessage({{"themeToggle": theme}}, "*");
+}});
 </script>
-""", unsafe_allow_html=True)
+""",
+height=120)
 
-
-
-
-
-
-
-# Membaca data dari toggle (window.streamlitToggle)
 current_toggle = streamlit_js_eval(
-    js_code="window.streamlitToggle ?? null",
-    key="read_toggle_state"
+    js_code="window.addEventListener('message', (e)=>{window.themeFromJS=e.data.themeToggle})",
+    key="listener"
 )
 
-if current_toggle in ["light", "dark"] and current_toggle != st.session_state.theme:
-    st.session_state.theme = current_toggle
+theme_value = streamlit_js_eval(
+    js_code="window.themeFromJS",
+    key="pull_theme"
+)
+
+if theme_value in ["light", "dark"] and theme_value != st.session_state.theme:
+    st.session_state.theme = theme_value
+
+
+
+
+
+
+
+
 
 
 
